@@ -64,12 +64,19 @@ public class TrackHITsServlet extends HttpServlet {
         //skip
       } else {
         Element hitElement = doc.select("a:matchesOwn(HITs Available:+)").first();
-        System.out.println(hitElement);
         String hits = hitElement.parent().nextElementSibling().text();
+        Integer iHits = Integer.parseInt(hits);
         
-        ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), Integer.parseInt(hits)));
+        HITinstance recentInstance = getRecentInstance(group.getGroupId());
+        Integer diff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable());
+        ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, diff));
       }
     }
+  }
+  
+  private HITinstance getRecentInstance(String groupId){
+    return ofy().load().type(HITinstance.class)
+        .filter("groupId", groupId).order("-timestamp").limit(1).first().now();
   }
   
   private void schedule(){

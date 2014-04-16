@@ -3,11 +3,11 @@
   <cron>
     <url>/pullLatestTasks?schedule=true</url>
     <description>PullLatestTasks</description>
-    <schedule>every 5 minutes</schedule>
+    <schedule>every 1 minutes</schedule>
   </cron>
   <cron>
     <url>/trackHits?schedule=true</url>
     <description>Track active HIT groups</description>
-    <schedule>every 5 minutes</schedule>
+    <schedule>every 1 minutes</schedule>
   </cron> -->
 </cronentries>

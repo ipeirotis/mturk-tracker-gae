@@ -133,7 +133,7 @@ public class PullLatestTasksServlet extends HttpServlet {
       HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
           description, keywords, expirationDate,
           (int)(100*reward.floatValue()), parseTime(timeAlloted), qualifications, 
-          hitContent);
+          hitContent, new Date());
       list.add(hitGroup);
     }
     
