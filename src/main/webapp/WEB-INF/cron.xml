@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cronentries><!-- 
+<cronentries>
   <cron>
     <url>/pullLatestTasks?schedule=true</url>
     <description>PullLatestTasks</description>
@@ -9,5 +9,5 @@
     <url>/trackHits?schedule=true</url>
     <description>Track active HIT groups</description>
     <schedule>every 1 minutes</schedule>
-  </cron> -->
+  </cron>
 </cronentries>

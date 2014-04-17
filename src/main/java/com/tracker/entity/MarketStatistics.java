@@ -13,14 +13,12 @@ import com.googlecode.objectify.annotation.Index;
 public class MarketStatistics {
   
   @Id
-  private String id;
+  private Long id;
   private Date timestamp; 
   private Integer hitGroupsAvailable;
   private Integer hitsAvailable;
   
-  public MarketStatistics(String id, Date timestamp,
-      Integer hitGroupsAvailable, Integer hitsAvailable) {
-    this.id = id;
+  public MarketStatistics(Date timestamp, Integer hitGroupsAvailable, Integer hitsAvailable){
     this.timestamp = timestamp;
     this.hitGroupsAvailable = hitGroupsAvailable;
     this.hitsAvailable = hitsAvailable;
@@ -30,11 +28,11 @@ public class MarketStatistics {
   @SuppressWarnings("unused")
   private MarketStatistics(){}
 
-  public String getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

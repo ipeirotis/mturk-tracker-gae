@@ -31,6 +31,7 @@ import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.tracker.entity.HITgroup;
+import com.tracker.entity.MarketStatistics;
 
 @SuppressWarnings("serial")
 public class PullLatestTasksServlet extends HttpServlet {
@@ -69,6 +70,16 @@ public class PullLatestTasksServlet extends HttpServlet {
     //Document doc = Jsoup.parse(html);
     Document doc = Jsoup.connect(URL).get();
     
+    //market statistics
+    String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
+    Integer availableHits = Integer.parseInt(availableHitsText.substring(0, 
+        availableHitsText.indexOf(" ")).trim().replaceAll(",", ""));
+    
+    String availableGroupsText = doc.select("td:matchesOwn([\\d-]+ of \\d+ Results+)").text();
+    Integer availableGroups = Integer.parseInt(availableGroupsText.substring(
+        availableGroupsText.indexOf("of")+2, availableGroupsText.indexOf("Results")).trim());
+    
+    //HITgroup
     Elements titleElements = doc.select("a.capsulelink");
     Elements groupElements = doc.select("a:matchesOwn(View a HIT in this group+)");
     Elements requesterElements = doc.select("a:matchesOwn(Requester+)");
@@ -107,7 +118,7 @@ public class PullLatestTasksServlet extends HttpServlet {
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
       Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
-      String description = descriptionElements.get(0).parent().nextElementSibling().text();
+      String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
       //keywords
       List<String> keywords = new ArrayList<String>();
@@ -138,6 +149,9 @@ public class PullLatestTasksServlet extends HttpServlet {
     }
     
     ofy().save().entities(list);
+    
+    MarketStatistics statistics = new MarketStatistics(new Date(), availableGroups, availableHits);
+    ofy().save().entity(statistics);
   }
   
   private void schedule(){
