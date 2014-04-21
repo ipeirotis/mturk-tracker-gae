@@ -89,7 +89,7 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
   private void schedule(){
     Queue queue = QueueFactory.getDefaultQueue();
     queue.add(Builder
-        .withUrl("/computeArrivalCompletionsServlet")
+        .withUrl("/computeArrivalCompletions")
         .etaMillis(System.currentTimeMillis())
         .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
         .method(TaskOptions.Method.GET));

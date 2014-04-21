@@ -11,7 +11,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ComputeArrivalCompletionsServlet</servlet-name>
-		<url-pattern>/computeArrivalCompletionsServlet</url-pattern>
+		<url-pattern>/computeArrivalCompletions</url-pattern>
 	</servlet-mapping>
 	
 	<servlet>
