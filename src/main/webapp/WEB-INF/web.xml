@@ -4,6 +4,16 @@
         xmlns="http://java.sun.com/xml/ns/javaee"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+        
+    <servlet>
+		<servlet-name>ComputeArrivalCompletionsServlet</servlet-name>
+		<servlet-class>com.tracker.servlet.ComputeArrivalCompletionsServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ComputeArrivalCompletionsServlet</servlet-name>
+		<url-pattern>/computeArrivalCompletionsServlet</url-pattern>
+	</servlet-mapping>
+	
 	<servlet>
 		<servlet-name>PullLatestTasksServlet</servlet-name>
 		<servlet-class>com.tracker.servlet.PullLatestTasksServlet</servlet-class>
@@ -13,7 +23,7 @@
 		<url-pattern>/pullLatestTasks</url-pattern>
 	</servlet-mapping>
 	
-		<servlet>
+	<servlet>
 		<servlet-name>TrackHITsServlet</servlet-name>
 		<servlet-class>com.tracker.servlet.TrackHITsServlet</servlet-class>
 	</servlet>

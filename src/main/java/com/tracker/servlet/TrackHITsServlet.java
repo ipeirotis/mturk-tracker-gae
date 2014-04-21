@@ -50,7 +50,7 @@ public class TrackHITsServlet extends HttpServlet {
   }
   
   private void loadAndParse(){
-    List<HITgroup> groups = ofy().load().type(HITgroup.class).filter("expirationDate >", new Date()).list();
+    List<HITgroup> groups = ofy().load().type(HITgroup.class).filter("active", true).list();
     
     for(HITgroup group : groups){
       Document doc = null;
@@ -61,15 +61,22 @@ public class TrackHITsServlet extends HttpServlet {
       }
       Element alertboxHeader = doc.getElementById("alertboxHeader");
       if(alertboxHeader != null && alertboxHeader.text().startsWith(NOT_AVAILABLE_ALERT)){
-        //skip
+        group.setActive(false);
+        ofy().save().entity(group);
       } else {
         Element hitElement = doc.select("a:matchesOwn(HITs Available:+)").first();
         String hits = hitElement.parent().nextElementSibling().text();
         Integer iHits = Integer.parseInt(hits);
         
         HITinstance recentInstance = getRecentInstance(group.getGroupId());
-        Integer diff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable());
-        ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, diff));
+        Integer hitsDiff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable());
+        Integer rewardsDiff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable())*group.getReward();
+        ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, rewardsDiff));
+
+        group.setHitsAvailable(recentInstance.getHitsAvailable());
+        group.setReward(group.getReward()*recentInstance.getHitsAvailable());
+        group.setLastSeen(new Date());
+        ofy().save().entity(group);
       }
     }
   }

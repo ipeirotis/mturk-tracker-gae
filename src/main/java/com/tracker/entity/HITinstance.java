@@ -18,13 +18,16 @@ public class HITinstance {
   private Date timestamp; 
   private Integer hitsAvailable;
   private Integer hitsDiff;
+  private Integer rewardDiff;
   
-  public HITinstance(String groupId, Date timestamp, Integer hitsAvailable, Integer hitsDiff) {
+  public HITinstance(String groupId, Date timestamp, Integer hitsAvailable, 
+      Integer hitsDiff, Integer rewardDiff) {
     this.id = groupId + "_" + timestamp.getTime();
     this.groupId = groupId;
     this.timestamp = timestamp;
     this.hitsAvailable = hitsAvailable;
     this.hitsDiff = hitsDiff;
+    this.rewardDiff = rewardDiff;
   }
   
   //for objectify
@@ -69,6 +72,14 @@ public class HITinstance {
 
   public void setHitsDiff(Integer hitsDiff) {
     this.hitsDiff = hitsDiff;
+  }
+
+  public Integer getRewardDiff() {
+    return rewardDiff;
+  }
+
+  public void setRewardDiff(Integer rewardDiff) {
+    this.rewardDiff = rewardDiff;
   } 
   
 }

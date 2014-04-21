@@ -19,17 +19,24 @@ public class HITgroup {
   private String description;
   private List<String> keywords;
   @Index
-  private Date expirationDate;  //Price in cents
-  private Integer reward;  //Time in seconds
-  private Integer timeAlloted;
+  private Date expirationDate;
+  private Integer reward; //Price in cents
+  private Integer timeAlloted; //Time in seconds
   private List<String> qualificationsRequired;
   private String hitContent;
+  @Index
   private Date firstSeen;
+  @Index
+  private Date lastSeen;
+  @Index
+  private boolean active = true;
+  private Integer hitsAvailable;
+  private Integer rewardsAvailable;
   
   public HITgroup(String groupId, String requesterId, String title,
       String description, List<String> keywords, Date expirationDate,
       Integer reward, Integer timeAlloted, List<String> qualificationsRequired, 
-      String hitContent, Date firstSeen) {
+      String hitContent, Date firstSeen, Date lastSeen) {
     this.groupId = groupId;
     this.requesterId = requesterId;
     this.title = title;
@@ -41,6 +48,7 @@ public class HITgroup {
     this.qualificationsRequired = qualificationsRequired;
     this.hitContent = hitContent;
     this.firstSeen = firstSeen;
+    this.firstSeen = lastSeen;
   }
   
   //for objectify
@@ -133,6 +141,38 @@ public class HITgroup {
 
   public void setFirstSeen(Date firstSeen) {
     this.firstSeen = firstSeen;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+
+  public Integer getHitsAvailable() {
+    return hitsAvailable;
+  }
+
+  public void setHitsAvailable(Integer hitsAvailable) {
+    this.hitsAvailable = hitsAvailable;
+  }
+
+  public Integer getRewardsAvailable() {
+    return rewardsAvailable;
+  }
+
+  public void setRewardsAvailable(Integer rewardsAvailable) {
+    this.rewardsAvailable = rewardsAvailable;
+  }
+
+  public Date getLastSeen() {
+    return lastSeen;
+  }
+
+  public void setLastSeen(Date lastSeen) {
+    this.lastSeen = lastSeen;
   }
 
 }

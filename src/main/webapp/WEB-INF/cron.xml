@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
   <cron>
+    <url>/computeArrivalCompletions?schedule=true</url>
+    <description>ComputeArrivalCompletions</description>
+    <schedule>every 1 hours</schedule>
+  </cron>
+  <cron>
     <url>/pullLatestTasks?schedule=true</url>
     <description>PullLatestTasks</description>
-    <schedule>every 1 minutes</schedule>
+    <schedule>every 5 minutes</schedule>
   </cron>
   <cron>
     <url>/trackHits?schedule=true</url>
     <description>Track active HIT groups</description>
-    <schedule>every 1 minutes</schedule>
+    <schedule>every 5 minutes</schedule>
   </cron>
 </cronentries>
