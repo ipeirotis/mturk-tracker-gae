@@ -27,13 +27,22 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
       throws IOException {
     String schedule = req.getParameter("schedule");
     
+    // We can specify either a "from" and "to" timestamps
+    // or we can specify a "diff" in minutes
+    
+    // The "to" is either passed as a parameter, or if ommitted is set to "now"
     String to_param = req.getParameter("to");
     Calendar to = getToTime(to_param);
     
+    // This is an optional parameters that shows how much back we should look (in minutes)
+    // If the "diff" is not specified, then "diff" is set by default to 60 minutes (1 hour)
+    String diff_param = req.getParameter("diff");
+    Integer diff = getDiffTime(diff_param);
+    
+    // If the "from" is not passed as a parameter, it is set to: "to"-"diff"
     String from_param = req.getParameter("from");
-    Calendar from = getFromTime(to, from_param);
-    
-    
+    Calendar from = getFromTime(to, diff, from_param);
+
     if("true".equals(schedule)){
       schedule(from, to);
       return;
@@ -42,12 +51,25 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     }
   }
 
-  private Calendar getFromTime(Calendar to, String from_param) {
+  private Integer getDiffTime(String diff_param) {
+    if (diff_param == null) {
+      diff_param = "60";
+    }
+    Integer diff = null;
+    try {
+      diff = Integer.parseInt(diff_param);
+    } catch (Exception e) {
+      diff = 60;
+    }
+    return diff;
+  }
+
+  private Calendar getFromTime(Calendar to, Integer diff, String from_param) {
     Calendar from = Calendar.getInstance();
     
     if (from_param==null) {
       from.setTimeInMillis(to.getTimeInMillis());
-      from.add(Calendar.HOUR, -1);
+      from.add(Calendar.MINUTE, -diff);
     } else {
       Long from_timestamp = Long.parseLong(from_param);
       from.setTimeInMillis(from_timestamp);
