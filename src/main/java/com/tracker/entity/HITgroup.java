@@ -14,6 +14,7 @@ public class HITgroup {
 
   @Id
   private String groupId;
+  @Index
   private String requesterId;
   private String title;
   private String description;

@@ -9,12 +9,13 @@ import com.googlecode.objectify.annotation.Index;
 
 @Entity
 @Cache
-@Index
 public class HITinstance {
 
   @Id
   private String id;
+  @Index
   private String groupId;
+  @Index
   private Date timestamp; 
   private Integer hitsAvailable;
   private Integer hitsDiff;
