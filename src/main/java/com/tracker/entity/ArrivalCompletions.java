@@ -17,17 +17,17 @@ public class ArrivalCompletions {
   private Date from;
   @Index
   private Date to;
-  private Integer hitGroupsArrived;
-  private Integer hitGroupsCompleted;
-  private Integer hitsArrived;
-  private Integer hitsCompleted;
-  private Integer rewardsArrived;
-  private Integer rewardsCompleted;
+  private Long hitGroupsArrived;
+  private Long hitGroupsCompleted;
+  private Long hitsArrived;
+  private Long hitsCompleted;
+  private Long rewardsArrived;
+  private Long rewardsCompleted;
   
   public ArrivalCompletions(Date from, Date to,
-      Integer hitGroupsArrived, Integer hitGroupsCompleted,
-      Integer hitsArrived, Integer hitsCompleted, Integer rewardsArrived,
-      Integer rewardsCompleted) {
+      Long hitGroupsArrived, Long hitGroupsCompleted,
+      Long hitsArrived, Long hitsCompleted, Long rewardsArrived,
+      Long rewardsCompleted) {
     this.from = from;
     this.to = to;
     this.hitGroupsArrived = hitGroupsArrived;
@@ -66,51 +66,51 @@ public class ArrivalCompletions {
     this.to = to;
   }
 
-  public Integer getHitGroupsArrived() {
+  public Long getHitGroupsArrived() {
     return hitGroupsArrived;
   }
 
-  public void setHitGroupsArrived(Integer hitGroupsArrived) {
+  public void setHitGroupsArrived(Long hitGroupsArrived) {
     this.hitGroupsArrived = hitGroupsArrived;
   }
 
-  public Integer getHitGroupsCompleted() {
+  public Long getHitGroupsCompleted() {
     return hitGroupsCompleted;
   }
 
-  public void setHitGroupsCompleted(Integer hitGroupsCompleted) {
+  public void setHitGroupsCompleted(Long hitGroupsCompleted) {
     this.hitGroupsCompleted = hitGroupsCompleted;
   }
 
-  public Integer getHitsArrived() {
+  public Long getHitsArrived() {
     return hitsArrived;
   }
 
-  public void setHitsArrived(Integer hitsArrived) {
+  public void setHitsArrived(Long hitsArrived) {
     this.hitsArrived = hitsArrived;
   }
 
-  public Integer getHitsCompleted() {
+  public Long getHitsCompleted() {
     return hitsCompleted;
   }
 
-  public void setHitsCompleted(Integer hitsCompleted) {
+  public void setHitsCompleted(Long hitsCompleted) {
     this.hitsCompleted = hitsCompleted;
   }
 
-  public Integer getRewardsArrived() {
+  public Long getRewardsArrived() {
     return rewardsArrived;
   }
 
-  public void setRewardsArrived(Integer rewardsArrived) {
+  public void setRewardsArrived(Long rewardsArrived) {
     this.rewardsArrived = rewardsArrived;
   }
 
-  public Integer getRewardsCompleted() {
+  public Long getRewardsCompleted() {
     return rewardsCompleted;
   }
 
-  public void setRewardsCompleted(Integer rewardsCompleted) {
+  public void setRewardsCompleted(Long rewardsCompleted) {
     this.rewardsCompleted = rewardsCompleted;
   }
 

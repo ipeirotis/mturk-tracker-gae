@@ -92,22 +92,29 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
   private void compute(Calendar from, Calendar to){
     
     List<HITgroup> arrivedGroups = ofy().load().type(HITgroup.class)
-        .filter("firstSeen >", from.getTime()).filter("firstSeen <", to.getTime()).list();
+        .filter("firstSeen >", from.getTime())
+        .filter("firstSeen <", to.getTime())
+        .list();
     
-    int hitGroupsArrived = arrivedGroups.size();
+    Long hitGroupsArrived = new Long(arrivedGroups.size());
     
     List<HITgroup> completedGroups = ofy().load().type(HITgroup.class)
-        .filter("lastSeen >", from.getTime()).filter("lastSeen <", to.getTime()).list();
+        .filter("lastSeen >", from.getTime())
+        .filter("lastSeen <", to.getTime())
+        .filter("active", Boolean.FALSE)
+        .list();
     
-    int hitGroupsCompleted = completedGroups.size();
+    Long hitGroupsCompleted = new Long(completedGroups.size());
     
     List<HITinstance> hitInstances = ofy().load().type(HITinstance.class)
-        .filter("timestamp >", from.getTime()).filter("timestamp <", to.getTime()).list();
+        .filter("timestamp >", from.getTime())
+        .filter("timestamp <", to.getTime())
+        .list();
     
-    int hitsArrived = 0;
-    int hitsCompleted = 0;
-    int rewardsArrived = 0;
-    int rewardsCompleted = 0;
+    Long hitsArrived = 0L;
+    Long hitsCompleted = 0L;
+    Long rewardsArrived = 0L;
+    Long rewardsCompleted = 0L;
   
     for(HITinstance inst : hitInstances){
       if(inst.getHitsDiff() != null) {

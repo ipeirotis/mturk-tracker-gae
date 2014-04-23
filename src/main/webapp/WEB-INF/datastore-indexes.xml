@@ -7,4 +7,8 @@
     <property name="from" direction="asc"/>
     <property name="to" direction="asc"/>
   </datastore-index>
+  <datastore-index kind="HITgroup" ancestor="false">
+    <property name="active" direction="asc"/>
+    <property name="lastSeen" direction="asc"/>
+  </datastore-index>
 </datastore-indexes>
