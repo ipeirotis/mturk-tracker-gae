@@ -5,6 +5,7 @@ import static com.tracker.ofy.OfyService.ofy;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,7 @@ public class TrackHITsServlet extends HttpServlet {
       } catch (Exception e) {
         //TODO:
         e.printStackTrace();
-        logger.severe(e.getMessage());
+        logger.log(Level.SEVERE, e.getMessage());
       }
     }
   }
