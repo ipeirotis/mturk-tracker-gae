@@ -68,16 +68,16 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     for(HITinstance inst : hitInstances){
       if(inst.getHitsDiff() != null) {
         if(inst.getHitsDiff() > 0){
-          hitsArrived++;
+          hitsArrived+= Math.abs(inst.getHitsDiff());
         } else {
-          hitsCompleted++;
+          hitsCompleted+= Math.abs(inst.getHitsDiff());
         }
       }
       if(inst.getRewardDiff() != null) {
         if(inst.getRewardDiff() > 0){
-          rewardsArrived++;
+          rewardsArrived += Math.abs(inst.getRewardDiff());
         } else {
-          rewardsCompleted++;
+          rewardsCompleted += Math.abs(inst.getRewardDiff());
         }
       }
     }
