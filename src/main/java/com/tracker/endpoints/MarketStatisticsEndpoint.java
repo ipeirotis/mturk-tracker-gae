@@ -22,7 +22,7 @@ import com.tracker.entity.MarketStatistics;
 @Api(name = "mturk", description = "The API for mturk-tracker", version = "v1")
 public class MarketStatisticsEndpoint {
 
-	private SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+	private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
 
 	@ApiMethod(name = "marketStatistics.list", path = "marketStatistics/list", httpMethod = HttpMethod.GET)
 	public CollectionResponse<MarketStatistics> list(@Named("from") String from,
