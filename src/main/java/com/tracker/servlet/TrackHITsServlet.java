@@ -74,10 +74,12 @@ public class TrackHITsServlet extends HttpServlet {
         Integer rewardsDiff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable())*group.getReward();
         ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, rewardsDiff));
 
-        group.setHitsAvailable(recentInstance.getHitsAvailable());
-        group.setReward(group.getReward()*recentInstance.getHitsAvailable());
-        group.setLastSeen(new Date());
-        ofy().save().entity(group);
+        if(recentInstance != null){
+	        group.setHitsAvailable(recentInstance.getHitsAvailable());
+	        group.setReward(group.getReward()*recentInstance.getHitsAvailable());
+	        group.setLastSeen(new Date());
+	        ofy().save().entity(group);
+        }
       }
     }
   }

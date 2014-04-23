@@ -48,17 +48,17 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     from.set(Calendar.MILLISECOND, 999);
     
     List<HITgroup> arrivedGroups = ofy().load().type(HITgroup.class)
-        .filter("firstSeen >", from).filter("firstSeen <", to).list();
+        .filter("firstSeen >", from.getTime()).filter("firstSeen <", to.getTime()).list();
     
     int hitGroupsArrived = arrivedGroups.size();
     
     List<HITgroup> completedGroups = ofy().load().type(HITgroup.class)
-        .filter("lastSeen >", from).filter("lastSeen <", to).list();
+        .filter("lastSeen >", from.getTime()).filter("lastSeen <", to.getTime()).list();
     
     int hitGroupsCompleted = completedGroups.size();
     
     List<HITinstance> hitInstances = ofy().load().type(HITinstance.class)
-        .filter("timestamp >", from).filter("timestamp <", to).list();
+        .filter("timestamp >", from.getTime()).filter("timestamp <", to.getTime()).list();
     
     int hitsArrived = 0;
     int hitsCompleted = 0;
