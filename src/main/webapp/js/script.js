@@ -71,10 +71,12 @@ $(function () {
 			dataType: 'json'})
 			.done(function(response) {
 
-				$.each(response.items, function( index, item ) {
-					hitsChartData.addRows([[new Date(item.from), item.hitsArrived]]);
-					rewardsChartData.addRows([[new Date(item.from), item.rewardsArrived]]);
-				});
+				if(response.items){
+					$.each(response.items, function( index, item ) {
+						hitsChartData.addRows([[new Date(item.from), item.hitsArrived]]);
+						rewardsChartData.addRows([[new Date(item.from), item.rewardsArrived]]);
+					});
+				}
 
 				if(activeTab == '#hits'){
 					drawHitsChart();
