@@ -11,8 +11,33 @@
     <schedule>every 1 minutes</schedule>
   </cron>
   <cron>
-    <url>/trackHits?schedule=true</url>
+    <url>/trackHits</url>
     <description>Track active HIT groups</description>
     <schedule>every 5 minutes</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=10&amp;date=1</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 00:01</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=30&amp;date=1</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 00:01</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=60&amp;date=1</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 00:01</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=360&amp;date=1</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 00:01</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=1440&amp;date=1</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 00:01</schedule>
   </cron>
 </cronentries>

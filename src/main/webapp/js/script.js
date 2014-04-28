@@ -8,12 +8,17 @@ $(function () {
 	$('#chartsTab a').click(function (e) {
 		e.preventDefault();
 		$(this).tab('show');
+		activeTab = $(this).attr('href');
 
-		if($(this).attr('href') =='#rewards'){
+		if($(this).attr('href') == '#marketStats'){
+			drawMsChart();
+		}
+		
+		if($(this).attr('href') == '#rewards'){
 			drawRewardsChart();
 		}
 
-		if($(this).attr('href') =='#hits'){
+		if($(this).attr('href') == '#hits'){
 			drawHitsChart();
 		}
 	});
@@ -48,6 +53,12 @@ $(function () {
 	var options = {
 			displayAnnotations: true
 	};
+	
+	var msChart;//marketStatistics chart
+	var msChartData = new google.visualization.DataTable();
+	msChartData.addColumn('date', 'Date');
+	msChartData.addColumn('number', 'HITs available');
+	msChartData.addColumn('number', 'HIT groups available');
 
 	var hitsChart;
 	var hitsChartData = new google.visualization.DataTable();
@@ -73,12 +84,14 @@ $(function () {
 
 				if(response.items){
 					$.each(response.items, function( index, item ) {
-						hitsChartData.addRows([[new Date(item.from), item.hitsArrived]]);
-						rewardsChartData.addRows([[new Date(item.from), item.rewardsArrived]]);
+						hitsChartData.addRows([[new Date(item.from), parseInt(item.hitsArrived)]]);
+						rewardsChartData.addRows([[new Date(item.from), parseInt(item.rewardsArrived)]]);
 					});
 				}
 
-				if(activeTab == '#hits'){
+				if(activeTab == '#marketStats'){
+					drawMsChart();
+				} else if(activeTab == '#hits'){
 					drawHitsChart();
 				} else if(activeTab == '#rewards'){
 					drawRewardsChart();
@@ -88,6 +101,13 @@ $(function () {
 				//TODO
 			});
 
+	}
+	
+	function drawMsChart(){
+		if(!msChart){
+			msChart = new google.visualization.AnnotationChart(document.getElementById('marketStatsChart'));
+		}
+		msChart.draw(msChartData, options);
 	}
 
 	function drawHitsChart(){

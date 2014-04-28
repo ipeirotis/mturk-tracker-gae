@@ -47,7 +47,7 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
       schedule(from, to);
       return;
     } else {
-      compute(from, to);
+      compute(from, to, diff);
     }
   }
 
@@ -89,7 +89,7 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     return to;
   }
   
-  private void compute(Calendar from, Calendar to){
+  private void compute(Calendar from, Calendar to, Integer diff){
     
     List<HITgroup> arrivedGroups = ofy().load().type(HITgroup.class)
         .filter("firstSeen >", from.getTime())
@@ -134,7 +134,7 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     }
     
     ofy().save().entity(new ArrivalCompletions(from.getTime(), to.getTime(), hitGroupsArrived, 
-        hitGroupsCompleted, hitsArrived, hitsCompleted, rewardsArrived, rewardsCompleted));
+        hitGroupsCompleted, hitsArrived, hitsCompleted, rewardsArrived, rewardsCompleted, diff));
   }
 
   private void schedule(Calendar from, Calendar to){

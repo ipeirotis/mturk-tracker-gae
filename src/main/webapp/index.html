@@ -8,7 +8,6 @@
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/themes/flick/jquery-ui.css" />
 
-    
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.js" type="text/javascript"></script>
@@ -23,12 +22,16 @@
         <input type="text" name="date_to" id="date_to"/>
 		
 		<ul class="nav nav-tabs" id="chartsTab">
-		  <li class="active"><a href="#hits" data-toggle="tab">Hits</a></li>
+		  <li class="active"><a href="#marketStats" data-toggle="tab">Market statistics</a></li>
+		  <li><a href="#hits" data-toggle="tab">Hits</a></li>
 		  <li><a href="#rewards" data-toggle="tab">Rewards</a></li>
 		  <li><a href="#projects" data-toggle="tab">Projects</a></li>
 		</ul>
 	
 		<div class="tab-content">
+		  <div class="tab-pane active" id="marketStats">
+		  	<div id="marketStatsChart" style="width: 900px; height: 450px;margin:10px;"></div>
+		  </div>
 		  <div class="tab-pane active" id="hits">
 		  	<div id="hitsChart" style="width: 900px; height: 450px;margin:10px;"></div>
 		  </div>

@@ -5,6 +5,7 @@ import static com.tracker.ofy.OfyService.ofy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.inject.Named;
@@ -30,9 +31,15 @@ public class MarketStatisticsEndpoint {
 		
 		List<MarketStatistics> result = new ArrayList<MarketStatistics>();
 		
+		Calendar dateTo = Calendar.getInstance();
+		dateTo.setTime(formatter.parse(to));
+		dateTo.set(Calendar.HOUR_OF_DAY, 23);
+		dateTo.set(Calendar.MINUTE, 59);
+		dateTo.set(Calendar.SECOND, 59);
+		
 		Query<MarketStatistics> query = ofy().load().type(MarketStatistics.class)
 				.filter("timestamp >=", formatter.parse(from))
-				.filter("timestamp <=", formatter.parse(to)).limit(1000);
+				.filter("timestamp <=", dateTo).limit(1000);
 
 	    if (cursorString != null){
 	        query = query.startAt(Cursor.fromWebSafeString(cursorString));

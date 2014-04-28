@@ -32,6 +32,15 @@
 		<url-pattern>/trackHits</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>ScheduleStatComputationServlet</servlet-name>
+		<servlet-class>com.tracker.servlet.ScheduleStatComputationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ScheduleStatComputationServlet</servlet-name>
+		<url-pattern>/scheduleStatComputation</url-pattern>
+	</servlet-mapping>
+	
 	<filter>
 		<filter-name>ObjectifyFilter</filter-name>
 		<filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>

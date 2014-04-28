@@ -126,7 +126,7 @@ public class PullLatestTasksServlet extends HttpServlet {
       for(int j = 0; j<keywordLinks.size(); j++){
         keywords.add(keywordLinks.get(j).text());
       }
-      
+
       //qualifications
       List<String> qualifications = new ArrayList<String>();
       Element qValues = qualificationElements.get(i).parent().nextElementSibling();
