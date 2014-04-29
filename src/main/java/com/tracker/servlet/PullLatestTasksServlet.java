@@ -120,7 +120,7 @@ public class PullLatestTasksServlet extends HttpServlet {
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
       Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
-      String hitsAvailable = hitsAvailableElements.get(i).parent().nextElementSibling().text();
+      Integer hitsAvailable = Integer.parseInt(hitsAvailableElements.get(i).parent().nextElementSibling().text());
       String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
       //keywords
@@ -141,7 +141,7 @@ public class PullLatestTasksServlet extends HttpServlet {
         }
       }
 
-      String hitContent = loadExternalHitContent(groupId);
+      String hitContent = loadHitContent(groupId);
       
       //create new HITgroup and HITinstance
       HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
@@ -149,7 +149,8 @@ public class PullLatestTasksServlet extends HttpServlet {
           (int)(100*reward.floatValue()), parseTime(timeAlloted), qualifications, 
           hitContent, new Date(), new Date());
       hitGroups.add(hitGroup);
-      hitInstances.add(new HITinstance(groupId, new Date(), Integer.parseInt(hitsAvailable), 0, 0));
+      hitInstances.add(new HITinstance(groupId, new Date(), hitsAvailable, 0, 
+    		  (int)(100*reward.floatValue())*hitsAvailable,0));
     }
     
     ofy().save().entities(hitGroups);
@@ -168,10 +169,15 @@ public class PullLatestTasksServlet extends HttpServlet {
         .method(TaskOptions.Method.GET));
   }
   
-  private String loadExternalHitContent(String groupId){
+  private String loadHitContent(String groupId){
     try {
       Document preview;
       preview = Jsoup.connect(PREVIEW_URL + groupId).timeout(30000).get();
+      
+      Element internalContentElement = preview.getElementById("hit-wrapper");
+      if(internalContentElement != null){
+    	  return internalContentElement.html();
+      }
 
       Elements iframes = preview.select("iframe[name=ExternalQuestionIFrame]");
       Element iframe = iframes.first();

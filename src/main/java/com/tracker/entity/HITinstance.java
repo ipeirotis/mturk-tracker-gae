@@ -19,15 +19,17 @@ public class HITinstance {
   private Date timestamp; 
   private Integer hitsAvailable;
   private Integer hitsDiff;
+  private Integer rewardsAvailable;
   private Integer rewardDiff;
   
   public HITinstance(String groupId, Date timestamp, Integer hitsAvailable, 
-      Integer hitsDiff, Integer rewardDiff) {
+      Integer hitsDiff, Integer rewardsAvailable, Integer rewardDiff) {
     this.id = groupId + "_" + timestamp.getTime();
     this.groupId = groupId;
     this.timestamp = timestamp;
     this.hitsAvailable = hitsAvailable;
     this.hitsDiff = hitsDiff;
+    this.rewardsAvailable = rewardsAvailable;
     this.rewardDiff = rewardDiff;
   }
   
@@ -80,7 +82,15 @@ public class HITinstance {
   }
 
   public void setRewardDiff(Integer rewardDiff) {
-    this.rewardDiff = rewardDiff;
+	  this.rewardDiff = rewardDiff;
+  }
+
+  public Integer getRewardsAvailable() {
+	  return rewardsAvailable;
+  }
+
+  public void setRewardsAvailable(Integer rewardsAvailable) {
+	  this.rewardsAvailable = rewardsAvailable;
   } 
   
 }

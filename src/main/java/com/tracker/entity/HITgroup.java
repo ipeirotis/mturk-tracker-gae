@@ -31,7 +31,6 @@ public class HITgroup {
   private Date lastSeen;
   @Index
   private boolean active = true;
-  private Integer rewardsAvailable;
   
   public HITgroup(String groupId, String requesterId, String title,
       String description, List<String> keywords, Date expirationDate,
@@ -149,14 +148,6 @@ public class HITgroup {
 
   public void setActive(boolean active) {
     this.active = active;
-  }
-
-  public Integer getRewardsAvailable() {
-    return rewardsAvailable;
-  }
-
-  public void setRewardsAvailable(Integer rewardsAvailable) {
-    this.rewardsAvailable = rewardsAvailable;
   }
 
   public Date getLastSeen() {

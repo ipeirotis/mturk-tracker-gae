@@ -51,7 +51,7 @@ private static final Logger logger = Logger.getLogger(TrackHITsServlet.class.get
 	  if(alertboxHeader != null && alertboxHeader.text().startsWith(NOT_AVAILABLE_ALERT)){
 		  group.setActive(false);
 		  ofy().save().entity(group);
-		  ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), 0, 0, 0));
+		  ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), 0, 0, 0, 0));
 	  } else {
 		  Element hitElement = doc.select("a:matchesOwn(HITs Available:+)").first();
 		  String hits = hitElement.parent().nextElementSibling().text();
@@ -60,7 +60,7 @@ private static final Logger logger = Logger.getLogger(TrackHITsServlet.class.get
 		  HITinstance recentInstance = getRecentInstance(group.getGroupId());
 		  Integer hitsDiff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable());
 		  Integer rewardsDiff = recentInstance == null ? 0 : (iHits-recentInstance.getHitsAvailable())*group.getReward();
-		  ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, rewardsDiff));
+		  ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, group.getReward()*iHits, rewardsDiff));
 
 		  if(recentInstance != null){
 			  group.setReward(group.getReward()*recentInstance.getHitsAvailable());
