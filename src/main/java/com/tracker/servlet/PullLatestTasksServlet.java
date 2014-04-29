@@ -67,10 +67,10 @@ public class PullLatestTasksServlet extends HttpServlet {
   }
   
   private void loadAndParse() throws Exception{
-    InputStream in = PullLatestTasksServlet.class.getClassLoader().getResourceAsStream("Amazon.htm");
-    String html = IOUtils.toString(in);
-    Document doc = Jsoup.parse(html);
-    //Document doc = Jsoup.connect(URL).get();
+    //InputStream in = PullLatestTasksServlet.class.getClassLoader().getResourceAsStream("Amazon.htm");
+    //String html = IOUtils.toString(in);
+    //Document doc = Jsoup.parse(html);
+    Document doc = Jsoup.connect(URL).get();
     
     //market statistics
     String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
