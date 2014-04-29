@@ -31,6 +31,7 @@ import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.tracker.entity.HITgroup;
+import com.tracker.entity.HITinstance;
 import com.tracker.entity.MarketStatistics;
 
 @SuppressWarnings("serial")
@@ -50,25 +51,26 @@ public class PullLatestTasksServlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
     
-    String schedule = req.getParameter("schedule");
-    
-    if("true".equals(schedule)){
-      schedule();
-      return;
-    } else {
-      try {
-        loadAndParse();
-      } catch (Exception e) {
-        logger.severe("Error parsing page: " + e.getMessage());
-      }
-    }
+	  String schedule = req.getParameter("schedule");
+
+	  if("true".equals(schedule)){
+		  schedule();
+		  return;
+	  } else {
+		  try {
+			  loadAndParse();
+		  } catch (Exception e) {
+			  e.printStackTrace();
+			  logger.severe("Error parsing page: " + e.getMessage());
+		  }
+	  }
   }
   
   private void loadAndParse() throws Exception{
-    //InputStream in = PullLatestTasksServlet.class.getClassLoader().getResourceAsStream("Amazon.htm");
-    //String html = IOUtils.toString(in);
-    //Document doc = Jsoup.parse(html);
-    Document doc = Jsoup.connect(URL).get();
+    InputStream in = PullLatestTasksServlet.class.getClassLoader().getResourceAsStream("Amazon.htm");
+    String html = IOUtils.toString(in);
+    Document doc = Jsoup.parse(html);
+    //Document doc = Jsoup.connect(URL).get();
     
     //market statistics
     String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
@@ -86,13 +88,15 @@ public class PullLatestTasksServlet extends HttpServlet {
     Elements expirationDateElements = doc.select("a:matchesOwn(HIT Expiration Date+)");
     Elements timeAllotedElements = doc.select("a:matchesOwn(Time Allotted+)");
     Elements rewardElements = doc.select("a:matchesOwn(Reward+)");
+    Elements hitsAvailableElements = doc.select("a:matchesOwn(HITs Available:+)");
     Elements descriptionElements = doc.select("a:matchesOwn(Description+)");
     Elements keywordElements = doc.select("a:matchesOwn(Keywords+)");
     Elements qualificationElements = doc.select("a:matchesOwn(Qualifications Required+)");
     
     int numberOfRows = titleElements.size();
     
-    List<HITgroup> list = new ArrayList<HITgroup>();
+    List<HITgroup> hitGroups = new ArrayList<HITgroup>();
+    List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     for(int i=0; i < numberOfRows; i++){
       String groupId = getQueryParamValue(groupElements.get(i).attr("href"), "groupId");
@@ -103,14 +107,12 @@ public class PullLatestTasksServlet extends HttpServlet {
       String date = expirationDateElements.get(i).parent().nextElementSibling().text();
       Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
       
-      //update HITgroup if expirationDate were changed
+      //check existing HITgroup
       HITgroup existingGroup = ofy().load().type(HITgroup.class).id(groupId).now();
-      if(existingGroup != null){
-        if(!existingGroup.getExpirationDate().equals(expirationDate)){
-          existingGroup.setExpirationDate(expirationDate);
+      if(existingGroup != null && existingGroup.isActive() == false){
+          existingGroup.setActive(true);
           ofy().save().entity(existingGroup);
-        } 
-        continue;
+      	  continue;
       }
 
       String title = titleElements.get(i).text();
@@ -118,6 +120,7 @@ public class PullLatestTasksServlet extends HttpServlet {
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
       Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
+      String hitsAvailable = hitsAvailableElements.get(i).parent().nextElementSibling().text();
       String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
       //keywords
@@ -140,15 +143,17 @@ public class PullLatestTasksServlet extends HttpServlet {
 
       String hitContent = loadExternalHitContent(groupId);
       
-      //create new HITgroup
+      //create new HITgroup and HITinstance
       HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
           description, keywords, expirationDate,
           (int)(100*reward.floatValue()), parseTime(timeAlloted), qualifications, 
           hitContent, new Date(), new Date());
-      list.add(hitGroup);
+      hitGroups.add(hitGroup);
+      hitInstances.add(new HITinstance(groupId, new Date(), Integer.parseInt(hitsAvailable), 0, 0));
     }
     
-    ofy().save().entities(list);
+    ofy().save().entities(hitGroups);
+    ofy().save().entities(hitInstances);
     
     MarketStatistics statistics = new MarketStatistics(new Date(), availableGroups, availableHits);
     ofy().save().entity(statistics);

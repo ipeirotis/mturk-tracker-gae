@@ -31,7 +31,6 @@ public class HITgroup {
   private Date lastSeen;
   @Index
   private boolean active = true;
-  private Integer hitsAvailable;
   private Integer rewardsAvailable;
   
   public HITgroup(String groupId, String requesterId, String title,
@@ -49,7 +48,7 @@ public class HITgroup {
     this.qualificationsRequired = qualificationsRequired;
     this.hitContent = hitContent;
     this.firstSeen = firstSeen;
-    this.firstSeen = lastSeen;
+    this.lastSeen = lastSeen;
   }
   
   //for objectify
@@ -150,14 +149,6 @@ public class HITgroup {
 
   public void setActive(boolean active) {
     this.active = active;
-  }
-
-  public Integer getHitsAvailable() {
-    return hitsAvailable;
-  }
-
-  public void setHitsAvailable(Integer hitsAvailable) {
-    this.hitsAvailable = hitsAvailable;
   }
 
   public Integer getRewardsAvailable() {

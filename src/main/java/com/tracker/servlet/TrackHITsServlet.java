@@ -63,7 +63,6 @@ private static final Logger logger = Logger.getLogger(TrackHITsServlet.class.get
 		  ofy().save().entity(new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, rewardsDiff));
 
 		  if(recentInstance != null){
-			  group.setHitsAvailable(recentInstance.getHitsAvailable());
 			  group.setReward(group.getReward()*recentInstance.getHitsAvailable());
 			  group.setLastSeen(new Date());
 			  ofy().save().entity(group);
