@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,8 +61,7 @@ public class PullLatestTasksServlet extends HttpServlet {
 		  try {
 			  loadAndParse();
 		  } catch (Exception e) {
-			  e.printStackTrace();
-			  logger.severe("Error parsing page: " + e.getMessage());
+			  logger.log(Level.SEVERE, "Error parsing page", e);
 		  }
 	  }
   }
@@ -87,7 +87,7 @@ public class PullLatestTasksServlet extends HttpServlet {
     Elements requesterElements = doc.select("a:matchesOwn(Requester+)");
     Elements expirationDateElements = doc.select("a:matchesOwn(HIT Expiration Date+)");
     Elements timeAllotedElements = doc.select("a:matchesOwn(Time Allotted+)");
-    Elements rewardElements = doc.select("a:matchesOwn(Reward+)");
+    Elements rewardElements = doc.select("a:matchesOwn(Reward:+)");
     Elements hitsAvailableElements = doc.select("a:matchesOwn(HITs Available:+)");
     Elements descriptionElements = doc.select("a:matchesOwn(Description+)");
     Elements keywordElements = doc.select("a:matchesOwn(Keywords+)");
@@ -186,7 +186,7 @@ public class PullLatestTasksServlet extends HttpServlet {
         return content.html();
       }
     } catch (Exception e) {
-      logger.warning("Unable to load external content: " + e.getMessage());
+      logger.log(Level.WARNING, "Unable to load external content", e);
     }
     return null;
   }
