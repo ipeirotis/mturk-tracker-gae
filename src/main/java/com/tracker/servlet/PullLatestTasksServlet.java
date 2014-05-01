@@ -149,8 +149,8 @@ public class PullLatestTasksServlet extends HttpServlet {
           (int)(100*reward.floatValue()), parseTime(timeAlloted), qualifications, 
           hitContent, new Date(), new Date());
       hitGroups.add(hitGroup);
-      hitInstances.add(new HITinstance(groupId, new Date(), hitsAvailable, 0, 
-    		  (int)(100*reward.floatValue())*hitsAvailable,0));
+      Integer rewardAvailable = (int)(100*reward.floatValue())*hitsAvailable;
+      hitInstances.add(new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable));
     }
     
     ofy().save().entities(hitGroups);
