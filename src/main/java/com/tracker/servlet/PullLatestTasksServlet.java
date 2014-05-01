@@ -90,8 +90,20 @@ public class PullLatestTasksServlet extends HttpServlet {
     
     int numberOfRows = titleElements.size();
     
-    List<HITgroup> hitGroups = new ArrayList<HITgroup>();
-    List<HITinstance> hitInstances = new ArrayList<HITinstance>();
+    assert(groupElements.size() == numberOfRows);
+    assert(requesterElements.size() == numberOfRows);
+    assert(expirationDateElements.size() == numberOfRows);
+    assert(timeAllotedElements.size() == numberOfRows);
+    assert(rewardElements.size() == numberOfRows);
+    assert(hitsAvailableElements.size() == numberOfRows);
+    assert(descriptionElements.size() == numberOfRows);
+    assert(keywordElements.size() == numberOfRows);
+    assert(qualificationElements.size() == numberOfRows);
+    
+    
+    
+    List<HITgroup> hitGroups = new ArrayList<HITgroup>(numberOfRows);
+    List<HITinstance> hitInstances = new ArrayList<HITinstance>(numberOfRows);
     
     for(int i=0; i < numberOfRows; i++){
       String groupId = getQueryParamValue(groupElements.get(i).attr("href"), "groupId");
