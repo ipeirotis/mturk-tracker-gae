@@ -98,6 +98,8 @@ public class PullLatestTasksServlet extends HttpServlet {
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
+    Date now = new Date();
+    
     for(int i=0; i < numberOfRows; i++){
       String groupId = getQueryParamValue(groupElements.get(i).attr("href"), "groupId");
       if(groupId == null){
@@ -106,12 +108,27 @@ public class PullLatestTasksServlet extends HttpServlet {
       
       String date = expirationDateElements.get(i).parent().nextElementSibling().text();
       Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
+      Integer hitsAvailable = Integer.parseInt(hitsAvailableElements.get(i).parent().nextElementSibling().text());
+      Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
+      Integer rewardValue = Math.round(100*reward.floatValue());
+      Integer rewardAvailable = rewardValue*hitsAvailable;
       
       //check existing HITgroup
       HITgroup existingGroup = ofy().load().type(HITgroup.class).id(groupId).now();
-      if(existingGroup != null && existingGroup.isActive() == false){
-          existingGroup.setActive(true);
-          ofy().save().entity(existingGroup);
+      if(existingGroup != null){
+        // If we already have a HITgroup, we just update the lastSeen page
+        existingGroup.setLastSeen(now);
+        
+        // If the group was inactive, we revive it and create a new HITinstance
+          if(existingGroup.isActive()==false) {
+            existingGroup.setActive(true);
+            existingGroup.setExpirationDate(expirationDate);
+            
+            HITinstance hitinstance = new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
+            hitInstances.add(hitinstance);
+          }
+          
+          hitGroups.add(existingGroup);
       	  continue;
       }
 
@@ -119,8 +136,6 @@ public class PullLatestTasksServlet extends HttpServlet {
       String requesterId = getQueryParamValue(
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
-      Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
-      Integer hitsAvailable = Integer.parseInt(hitsAvailableElements.get(i).parent().nextElementSibling().text());
       String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
       //keywords
@@ -143,14 +158,17 @@ public class PullLatestTasksServlet extends HttpServlet {
 
       String hitContent = loadHitContent(groupId);
       
-      //create new HITgroup and HITinstance
+      
+      //create new HITgroup 
       HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
-          description, keywords, expirationDate,
-          (int)(100*reward.floatValue()), parseTime(timeAlloted), qualifications, 
-          hitContent, new Date(), new Date());
+          description, keywords, expirationDate, rewardValue, 
+          parseTime(timeAlloted), qualifications, hitContent, now, now);
       hitGroups.add(hitGroup);
-      Integer rewardAvailable = (int)(100*reward.floatValue())*hitsAvailable;
-      hitInstances.add(new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable));
+      
+      // Create a new (the first) HITinstance
+     
+      HITinstance hitinstance = new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
+      hitInstances.add(hitinstance);
     }
     
     ofy().save().entities(hitGroups);
