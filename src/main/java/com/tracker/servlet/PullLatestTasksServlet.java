@@ -67,19 +67,14 @@ public class PullLatestTasksServlet extends HttpServlet {
   }
   
   private void loadAndParse() throws Exception{
-    //InputStream in = PullLatestTasksServlet.class.getClassLoader().getResourceAsStream("Amazon.htm");
-    //String html = IOUtils.toString(in);
-    //Document doc = Jsoup.parse(html);
+    
+    Date now = new Date();
     Document doc = Jsoup.connect(URL).get();
     
     //market statistics
-    String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
-    Integer availableHits = Integer.parseInt(availableHitsText.substring(0, 
-        availableHitsText.indexOf(" ")).trim().replaceAll(",", ""));
-    
-    String availableGroupsText = doc.select("td:matchesOwn([\\d-]+ of \\d+ Results+)").text();
-    Integer availableGroups = Integer.parseInt(availableGroupsText.substring(
-        availableGroupsText.indexOf("of")+2, availableGroupsText.indexOf("Results")).trim());
+    MarketStatistics statistics = extractMarketStatistics(doc);
+    statistics.setTimestamp(now);
+    ofy().save().entity(statistics);
     
     //HITgroup
     Elements titleElements = doc.select("a.capsulelink");
@@ -97,8 +92,6 @@ public class PullLatestTasksServlet extends HttpServlet {
     
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
-    
-    Date now = new Date();
     
     for(int i=0; i < numberOfRows; i++){
       String groupId = getQueryParamValue(groupElements.get(i).attr("href"), "groupId");
@@ -135,47 +128,77 @@ public class PullLatestTasksServlet extends HttpServlet {
       String title = titleElements.get(i).text();
       String requesterId = getQueryParamValue(
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
+      String requesterName = requesterElements.get(i).parent().nextElementSibling().child(0).text();
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
       String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
       //keywords
-      List<String> keywords = new ArrayList<String>();
-      Elements keywordLinks = keywordElements.get(i).parent().nextElementSibling().getElementsByTag("a");
-      for(int j = 0; j<keywordLinks.size(); j++){
-        keywords.add(keywordLinks.get(j).text());
-      }
+      List<String> keywords = getKeywords(keywordElements.get(i));
 
       //qualifications
-      List<String> qualifications = new ArrayList<String>();
-      Element qValues = qualificationElements.get(i).parent().nextElementSibling();
-
-      if(qValues != null){
-        Elements qElements = qValues.getElementsByTag("a");
-        for(Element qElement : qElements){
-          qualifications.add(qElement.text());
-        }
-      }
-
+      List<String> qualifications = getQualifications(qualificationElements.get(i));
+      
       String hitContent = loadHitContent(groupId);
       
       
       //create new HITgroup 
-      HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
+      HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
           description, keywords, expirationDate, rewardValue, 
           parseTime(timeAlloted), qualifications, hitContent, now, now);
       hitGroups.add(hitGroup);
       
       // Create a new (the first) HITinstance
      
-      HITinstance hitinstance = new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
+      HITinstance hitinstance = new HITinstance(groupId, now, hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
       hitInstances.add(hitinstance);
     }
     
     ofy().save().entities(hitGroups);
     ofy().save().entities(hitInstances);
     
+
+  }
+  
+  private List<String> getKeywords(Element keywordElement) {
+    //keywords
+    List<String> keywords = new ArrayList<String>();
+    Elements keywordLinks = keywordElement.parent().nextElementSibling().getElementsByTag("a");
+    for(int j = 0; j<keywordLinks.size(); j++){
+      String keyword = keywordLinks.get(j).text();
+      keywords.add(keyword);
+    }
+    return keywords;
+    
+  }
+  
+  private List<String> getQualifications(Element qualificationElement) {
+    //qualifications
+    List<String> qualifications = new ArrayList<String>();
+    Element qValues = qualificationElement.parent().nextElementSibling();
+
+    if(qValues != null){
+      Elements qElements = qValues.getElementsByTag("a");
+      for(Element qElement : qElements){
+        qualifications.add(qElement.text());
+      }
+    }
+    return qualifications;
+    
+  }
+  
+
+
+  private MarketStatistics extractMarketStatistics(Document doc) {
+    String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
+    Integer availableHits = Integer.parseInt(availableHitsText.substring(0, 
+        availableHitsText.indexOf(" ")).trim().replaceAll(",", ""));
+    
+    String availableGroupsText = doc.select("td:matchesOwn([\\d-]+ of \\d+ Results+)").text();
+    Integer availableGroups = Integer.parseInt(availableGroupsText.substring(
+        availableGroupsText.indexOf("of")+2, availableGroupsText.indexOf("Results")).trim());
+    
     MarketStatistics statistics = new MarketStatistics(new Date(), availableGroups, availableHits);
-    ofy().save().entity(statistics);
+    return statistics;
   }
   
   private void schedule(){
