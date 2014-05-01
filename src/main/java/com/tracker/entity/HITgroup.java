@@ -16,6 +16,7 @@ public class HITgroup {
   private String groupId;
   @Index
   private String requesterId;
+  private String requesterName;
   private String title;
   private String description;
   private List<String> keywords;
@@ -32,12 +33,13 @@ public class HITgroup {
   @Index
   private boolean active = true;
   
-  public HITgroup(String groupId, String requesterId, String title,
+  public HITgroup(String groupId, String requesterId, String requesterName, String title,
       String description, List<String> keywords, Date expirationDate,
       Integer reward, Integer timeAlloted, List<String> qualificationsRequired, 
       String hitContent, Date firstSeen, Date lastSeen) {
     this.groupId = groupId;
     this.requesterId = requesterId;
+    this.requesterName = requesterName;
     this.title = title;
     this.description = description;
     this.keywords = keywords;
@@ -156,6 +158,14 @@ public class HITgroup {
 
   public void setLastSeen(Date lastSeen) {
     this.lastSeen = lastSeen;
+  }
+
+  public String getRequesterName() {
+	  return requesterName;
+  }
+
+  public void setRequesterName(String requesterName) {
+	  this.requesterName = requesterName;
   }
 
 }

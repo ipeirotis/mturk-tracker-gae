@@ -135,6 +135,7 @@ public class PullLatestTasksServlet extends HttpServlet {
       String title = titleElements.get(i).text();
       String requesterId = getQueryParamValue(
           requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
+      String requesterName = requesterElements.get(i).parent().nextElementSibling().child(0).text();
       String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
       String description = descriptionElements.get(i).parent().nextElementSibling().text();
       
@@ -160,7 +161,7 @@ public class PullLatestTasksServlet extends HttpServlet {
       
       
       //create new HITgroup 
-      HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
+      HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
           description, keywords, expirationDate, rewardValue, 
           parseTime(timeAlloted), qualifications, hitContent, now, now);
       hitGroups.add(hitGroup);
