@@ -3,7 +3,7 @@ google.load('visualization', '1.1', {'packages':['annotationchart']});
 $(function () {
 	google.setOnLoadCallback(drawChart);
 
-	var activeTab = '#hits';
+	var activeTab = '#marketStats';
 
 	$('#chartsTab a').click(function (e) {
 		e.preventDefault();
