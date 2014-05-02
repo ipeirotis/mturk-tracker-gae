@@ -1,4 +1,4 @@
-package com.tracker.servlet;
+package com.tracker.servlet.schedule;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -15,7 +15,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 
 @SuppressWarnings("serial")
-public class ScheduleStatComputationServlet extends HttpServlet {
+public class ScheduleStatComputation extends HttpServlet {
 	
 	private static final long DAY_IN_MILLIS = 1000*60*60*24;
 	private static final long MIN_IN_MILLIS = 60*1000;

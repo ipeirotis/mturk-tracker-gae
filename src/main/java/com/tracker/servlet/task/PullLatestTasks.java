@@ -1,9 +1,8 @@
-package com.tracker.servlet;
+package com.tracker.servlet.task;
 
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -20,25 +19,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 import com.tracker.entity.MarketStatistics;
 
 @SuppressWarnings("serial")
-public class PullLatestTasksServlet extends HttpServlet {
+public class PullLatestTasks extends HttpServlet {
   
-  private static final Logger logger = Logger.getLogger(PullLatestTasksServlet.class.getName());
+  private static final Logger logger = Logger.getLogger(PullLatestTasks.class.getName());
   private static final String URL = "https://www.mturk.com/mturk/sorthits?"
       + "searchSpec=HITGroupSearch%23T%231%2310%23-1%23T%23%21%23%21LastUpdatedTime%210%21%23%21"
       + "&selectedSearchType=hitgroups&searchWords=&sortType=LastUpdatedTime%3A1&%2Fsort.x=14&%2Fsort.y=9";
@@ -51,25 +44,20 @@ public class PullLatestTasksServlet extends HttpServlet {
   
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-    
-    String schedule = req.getParameter("schedule");
+    String pageNumberParam = req.getParameter("pageNumber");
+    Integer pageNumber = pageNumberParam == null ? 1 : Integer.valueOf(pageNumberParam);
 
-    if("true".equals(schedule)){
-      schedule();
-      return;
-    } else {
-      try {
-        loadAndParse();
-      } catch (Exception e) {
+    try {
+        loadAndParse(pageNumber);
+    } catch (Exception e) {
         logger.log(Level.SEVERE, "Error parsing page", e);
-      }
     }
   }
   
-  private void loadAndParse() throws Exception{
+  private void loadAndParse(Integer pageNumber) throws Exception{
     
     Date now = new Date();
-    Document doc = Jsoup.connect(URL).get();
+    Document doc = Jsoup.connect(URL + "&pageNumber=" + pageNumber.toString()).get();
     
     //market statistics
     MarketStatistics statistics = extractMarketStatistics(doc);
@@ -99,8 +87,6 @@ public class PullLatestTasksServlet extends HttpServlet {
     assert(descriptionElements.size() == numberOfRows);
     assert(keywordElements.size() == numberOfRows);
     assert(qualificationElements.size() == numberOfRows);
-    
-    
     
     List<HITgroup> hitGroups = new ArrayList<HITgroup>(numberOfRows);
     List<HITinstance> hitInstances = new ArrayList<HITinstance>(numberOfRows);
@@ -168,7 +154,6 @@ public class PullLatestTasksServlet extends HttpServlet {
     ofy().save().entities(hitGroups);
     ofy().save().entities(hitInstances);
     
-
   }
   
   private List<String> getKeywords(Element keywordElement) {
@@ -197,8 +182,6 @@ public class PullLatestTasksServlet extends HttpServlet {
     return qualifications;
     
   }
-  
-
 
   private MarketStatistics extractMarketStatistics(Document doc) {
     String availableHitsText = doc.select("span:matchesOwn(available now+)").first().child(0).text();
@@ -211,15 +194,6 @@ public class PullLatestTasksServlet extends HttpServlet {
     
     MarketStatistics statistics = new MarketStatistics(new Date(), availableGroups, availableHits);
     return statistics;
-  }
-  
-  private void schedule(){
-    Queue queue = QueueFactory.getDefaultQueue();
-    queue.add(Builder
-        .withUrl("/pullLatestTasks")
-        .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
-        .method(TaskOptions.Method.GET));
   }
   
   private String loadHitContent(String groupId){

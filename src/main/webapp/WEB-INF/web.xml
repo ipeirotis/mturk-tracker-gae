@@ -15,29 +15,47 @@
 	</servlet-mapping>
 	
 	<servlet>
-		<servlet-name>PullLatestTasksServlet</servlet-name>
-		<servlet-class>com.tracker.servlet.PullLatestTasksServlet</servlet-class>
+		<servlet-name>ScheduleLatestTasksPulling</servlet-name>
+		<servlet-class>com.tracker.servlet.schedule.ScheduleLatestTasksPulling</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>PullLatestTasksServlet</servlet-name>
+		<servlet-name>ScheduleLatestTasksPulling</servlet-name>
+		<url-pattern>/scheduleLatestTasksPulling</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>PullLatestTasks</servlet-name>
+		<servlet-class>com.tracker.servlet.task.PullLatestTasks</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>PullLatestTasks</servlet-name>
 		<url-pattern>/pullLatestTasks</url-pattern>
 	</servlet-mapping>
 	
 	<servlet>
-		<servlet-name>TrackHITsServlet</servlet-name>
-		<servlet-class>com.tracker.servlet.TrackHITsServlet</servlet-class>
+		<servlet-name>ScheduleHITsTracking</servlet-name>
+		<servlet-class>com.tracker.servlet.schedule.ScheduleHITsTracking</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>TrackHITsServlet</servlet-name>
+		<servlet-name>ScheduleHITsTracking</servlet-name>
+		<url-pattern>/scheduleHITsTracking</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>TrackHITs</servlet-name>
+		<servlet-class>com.tracker.servlet.task.TrackHITs</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TrackHITs</servlet-name>
 		<url-pattern>/trackHits</url-pattern>
 	</servlet-mapping>
 	
 	<servlet>
-		<servlet-name>ScheduleStatComputationServlet</servlet-name>
-		<servlet-class>com.tracker.servlet.ScheduleStatComputationServlet</servlet-class>
+		<servlet-name>ScheduleStatComputation</servlet-name>
+		<servlet-class>com.tracker.servlet.schedule.ScheduleStatComputation</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>ScheduleStatComputationServlet</servlet-name>
+		<servlet-name>ScheduleStatComputation</servlet-name>
 		<url-pattern>/scheduleStatComputation</url-pattern>
 	</servlet-mapping>
 	

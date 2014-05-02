@@ -1,10 +1,9 @@
-package com.tracker.servlet;
+package com.tracker.servlet.task;
 
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -15,32 +14,18 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 
 @SuppressWarnings("serial")
-public class TrackHITsServlet extends HttpServlet {
+public class TrackHITs extends HttpServlet {
 
   @SuppressWarnings("unused")
-  private static final Logger logger = Logger.getLogger(TrackHITsServlet.class.getName());
+  private static final Logger logger = Logger.getLogger(TrackHITs.class.getName());
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final String NOT_AVAILABLE_ALERT = "There are no more available HITs in this group";
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-    // Get the list of all HITgroups that are active.
-    List<HITgroup> groups = ofy().load().type(HITgroup.class).filter("active", true).list();
-    for (HITgroup group : groups) {
-      schedule(group.getGroupId());
-    }
-  }
-
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     loadAndParse(req.getParameter("groupId"));
   }
 
@@ -91,16 +76,6 @@ public class TrackHITsServlet extends HttpServlet {
 
   private HITinstance getRecentInstance(String groupId) {
     return ofy().load().type(HITinstance.class).filter("groupId", groupId).order("-timestamp").limit(1).first().now();
-  }
-
-  private void schedule(String groupId) {
-    Queue queue = QueueFactory.getDefaultQueue();
-    queue.add(Builder
-        .withUrl("/trackHits")
-        .param("groupId", groupId)
-        .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
-        .method(TaskOptions.Method.POST));
   }
 
 }

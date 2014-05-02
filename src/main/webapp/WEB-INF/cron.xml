@@ -2,12 +2,12 @@
 <cronentries>
 
   <cron>
-    <url>/pullLatestTasks?schedule=true</url>
+    <url>/scheduleLatestTasksPulling</url>
     <description>PullLatestTasks</description>
     <schedule>every 1 minutes</schedule>
   </cron>
   <cron>
-    <url>/trackHits</url>
+    <url>/scheduleHITsTracking</url>
     <description>Track active HIT groups</description>
     <schedule>every 5 minutes</schedule>
   </cron>
