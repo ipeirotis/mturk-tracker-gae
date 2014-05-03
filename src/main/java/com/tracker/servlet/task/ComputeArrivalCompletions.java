@@ -1,4 +1,4 @@
-package com.tracker.servlet;
+package com.tracker.servlet.task;
 
 import static com.tracker.ofy.OfyService.ofy;
 
@@ -11,21 +11,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.tracker.entity.ArrivalCompletions;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 
 @SuppressWarnings("serial")
-public class ComputeArrivalCompletionsServlet extends HttpServlet {
+public class ComputeArrivalCompletions extends HttpServlet {
   
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-    String schedule = req.getParameter("schedule");
     
     // We can specify either a "from" and "to" timestamps
     // or we can specify a "diff" in minutes
@@ -43,12 +37,7 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     String from_param = req.getParameter("from");
     Calendar from = getFromTime(to, diff, from_param);
 
-    if("true".equals(schedule)){
-      schedule(from, to);
-      return;
-    } else {
-      compute(from, to, diff);
-    }
+    compute(from, to, diff);
   }
 
   private Integer getDiffTime(String diff_param) {
@@ -135,17 +124,6 @@ public class ComputeArrivalCompletionsServlet extends HttpServlet {
     
     ofy().save().entity(new ArrivalCompletions(from.getTime(), to.getTime(), hitGroupsArrived, 
         hitGroupsCompleted, hitsArrived, hitsCompleted, rewardsArrived, rewardsCompleted, diff));
-  }
-
-  private void schedule(Calendar from, Calendar to){
-    Queue queue = QueueFactory.getDefaultQueue();
-    queue.add(Builder
-        .withUrl("/computeArrivalCompletions")
-        .param("from", Long.toString(from.getTimeInMillis()))
-        .param("to", Long.toString(to.getTimeInMillis()))
-        .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
-        .method(TaskOptions.Method.GET));
   }
 
 }

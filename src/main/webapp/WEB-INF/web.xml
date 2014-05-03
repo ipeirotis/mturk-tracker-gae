@@ -6,11 +6,11 @@
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
         
     <servlet>
-		<servlet-name>ComputeArrivalCompletionsServlet</servlet-name>
-		<servlet-class>com.tracker.servlet.ComputeArrivalCompletionsServlet</servlet-class>
+		<servlet-name>ComputeArrivalCompletions</servlet-name>
+		<servlet-class>com.tracker.servlet.task.ComputeArrivalCompletions</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>ComputeArrivalCompletionsServlet</servlet-name>
+		<servlet-name>ComputeArrivalCompletions</servlet-name>
 		<url-pattern>/computeArrivalCompletions</url-pattern>
 	</servlet-mapping>
 	
