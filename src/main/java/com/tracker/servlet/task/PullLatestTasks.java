@@ -3,11 +3,13 @@ package com.tracker.servlet.task;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -54,106 +57,115 @@ public class PullLatestTasks extends HttpServlet {
     }
   }
   
-  private void loadAndParse(Integer pageNumber) throws Exception{
-    
-    Date now = new Date();
+  private void loadAndParse(Integer pageNumber) throws Exception {
     Document doc = Jsoup.connect(URL + "&pageNumber=" + pageNumber.toString()).get();
+  	Date now = new Date();
+    List<HITgroup> hitGroups = new ArrayList<HITgroup>();
+    List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
     MarketStatistics statistics = extractMarketStatistics(doc);
     statistics.setTimestamp(now);
     ofy().save().entity(statistics);
+
+    Elements rows = getHitRows(doc);
     
-    //HITgroup
-    Elements titleElements = doc.select("a.capsulelink");
-    Elements groupElements = doc.select("a:matchesOwn(View a HIT in this group+)");
-    Elements requesterElements = doc.select("a:matchesOwn(Requester+)");
-    Elements expirationDateElements = doc.select("a:matchesOwn(HIT Expiration Date+)");
-    Elements timeAllotedElements = doc.select("a:matchesOwn(Time Allotted+)");
-    Elements rewardElements = doc.select("a:matchesOwn(Reward:+)");
-    Elements hitsAvailableElements = doc.select("a:matchesOwn(HITs Available:+)");
-    Elements descriptionElements = doc.select("a:matchesOwn(Description+)");
-    Elements keywordElements = doc.select("a:matchesOwn(Keywords+)");
-    Elements qualificationElements = doc.select("a:matchesOwn(Qualifications Required+)");
+    if(rows == null){
+        logger.log(Level.WARNING, "HITgroups are not found");
+        return;
+    }
+    Iterator<Element> rowsIterator = rows.iterator();
     
-    int numberOfRows = titleElements.size();
-    
-    assert(groupElements.size() == numberOfRows);
-    assert(requesterElements.size() == numberOfRows);
-    assert(expirationDateElements.size() == numberOfRows);
-    assert(timeAllotedElements.size() == numberOfRows);
-    assert(rewardElements.size() == numberOfRows);
-    assert(hitsAvailableElements.size() == numberOfRows);
-    assert(descriptionElements.size() == numberOfRows);
-    assert(keywordElements.size() == numberOfRows);
-    assert(qualificationElements.size() == numberOfRows);
-    
-    List<HITgroup> hitGroups = new ArrayList<HITgroup>(numberOfRows);
-    List<HITinstance> hitInstances = new ArrayList<HITinstance>(numberOfRows);
-    
-    for(int i=0; i < numberOfRows; i++){
-      String groupId = getQueryParamValue(groupElements.get(i).attr("href"), "groupId");
-      if(groupId == null){
-        continue;
-      }
-      
-      String date = expirationDateElements.get(i).parent().nextElementSibling().text();
-      Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
-      Integer hitsAvailable = Integer.parseInt(hitsAvailableElements.get(i).parent().nextElementSibling().text());
-      Number reward = cf.parse(rewardElements.get(i).parent().nextElementSibling().child(0).text());
-      Integer rewardValue = Math.round(100*reward.floatValue());
-      Integer rewardAvailable = rewardValue*hitsAvailable;
-      
-      //check existing HITgroup
-      HITgroup existingGroup = ofy().load().type(HITgroup.class).id(groupId).now();
-      if(existingGroup != null){
-        // If we already have a HITgroup, we just update the lastSeen page
-        existingGroup.setLastSeen(now);
-        
-        // If the group was inactive, we revive it and create a new HITinstance
-          if(existingGroup.isActive()==false) {
-            existingGroup.setActive(true);
-            existingGroup.setExpirationDate(expirationDate);
-            
-            HITinstance hitinstance = new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
+    while(rowsIterator.hasNext()) {
+        try{
+            Element row = rowsIterator.next();
+            Element titleElement = row.select("a.capsulelink").first();
+            Element groupElement = row.select("a:matchesOwn(View a HIT in this group+)").first();
+            Element requesterElement = row.select("a:matchesOwn(Requester+)").first();
+            Element expirationDateElement = row.select("a:matchesOwn(HIT Expiration Date+)").first();
+            Element timeAllotedElement = row.select("a:matchesOwn(Time Allotted+)").first();
+            Element rewardElement = row.select("a:matchesOwn(Reward:+)").first();
+            Element hitsAvailableElement = row.select("a:matchesOwn(HITs Available:+)").first();
+            Element descriptionElement = row.select("a:matchesOwn(Description+)").first();
+            Element keywordElement = row.select("a:matchesOwn(Keywords+)").first();
+            Element qualificationElement = row.select("a:matchesOwn(Qualifications Required+)").first();
+
+            String groupId = getQueryParamValue(groupElement.attr("href"), "groupId");
+            if(groupId == null){
+                continue;
+            }
+
+            String date = expirationDateElement.parent().nextElementSibling().text();
+            Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
+            Integer hitsAvailable = Integer.parseInt(hitsAvailableElement.parent().nextElementSibling().text());
+            Number reward = cf.parse(rewardElement.parent().nextElementSibling().child(0).text());
+            Integer rewardValue = Math.round(100*reward.floatValue());
+            Integer rewardAvailable = rewardValue*hitsAvailable;
+
+            //check existing HITgroup
+            HITgroup existingGroup = ofy().load().type(HITgroup.class).id(groupId).now();
+            if(existingGroup != null){
+                // If we already have a HITgroup, we just update the lastSeen page
+                existingGroup.setLastSeen(now);
+
+                // If the group was inactive, we revive it and create a new HITinstance
+                if(existingGroup.isActive()==false) {
+                    existingGroup.setActive(true);
+                    existingGroup.setExpirationDate(expirationDate);
+
+                    HITinstance hitinstance = new HITinstance(groupId, new Date(), hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
+                    hitInstances.add(hitinstance);
+                }
+
+                hitGroups.add(existingGroup);
+                continue;
+            }
+
+            String title = titleElement.text();
+            String requesterId = getQueryParamValue(
+                    requesterElement.parent().nextElementSibling().child(0).attr("href"), "requesterId");
+            String requesterName = requesterElement.parent().nextElementSibling().child(0).text();
+            String timeAlloted = timeAllotedElement.parent().nextElementSibling().text();
+            String description = descriptionElement.parent().nextElementSibling().text();
+
+            //keywords
+            List<String> keywords = getKeywords(keywordElement);
+
+            //qualifications
+            List<String> qualifications = getQualifications(qualificationElement);
+
+            String hitContent = loadHitContent(groupId);
+
+            //create new HITgroup 
+            HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
+                    description, keywords, expirationDate, rewardValue, 
+                    parseTime(timeAlloted), qualifications, hitContent, now, now);
+            hitGroups.add(hitGroup);
+
+            // Create a new (the first) HITinstance
+            HITinstance hitinstance = new HITinstance(groupId, now, hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
             hitInstances.add(hitinstance);
-          }
-          
-          hitGroups.add(existingGroup);
-          continue;
-      }
-
-      String title = titleElements.get(i).text();
-      String requesterId = getQueryParamValue(
-          requesterElements.get(i).parent().nextElementSibling().child(0).attr("href"), "requesterId");
-      String requesterName = requesterElements.get(i).parent().nextElementSibling().child(0).text();
-      String timeAlloted = timeAllotedElements.get(i).parent().nextElementSibling().text();
-      String description = descriptionElements.get(i).parent().nextElementSibling().text();
-      
-      //keywords
-      List<String> keywords = getKeywords(keywordElements.get(i));
-
-      //qualifications
-      List<String> qualifications = getQualifications(qualificationElements.get(i));
-      
-      String hitContent = loadHitContent(groupId);
-      
-      
-      //create new HITgroup 
-      HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
-          description, keywords, expirationDate, rewardValue, 
-          parseTime(timeAlloted), qualifications, hitContent, now, now);
-      hitGroups.add(hitGroup);
-      
-      // Create a new (the first) HITinstance
-     
-      HITinstance hitinstance = new HITinstance(groupId, now, hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
-      hitInstances.add(hitinstance);
+        } catch(Exception e){
+            logger.log(Level.SEVERE, "Error parsing HITgroup row", e);
+        }
     }
     
-    ofy().save().entities(hitGroups);
-    ofy().save().entities(hitInstances);
-    
+    if(hitGroups.size() != 0 && hitInstances.size() != 0){
+        ofy().save().entities(hitGroups);
+        ofy().save().entities(hitInstances);
+    }
+  }
+  
+  private Elements getHitRows(Document doc){
+    Elements tables = doc.select("table[cellspacing=5][width=100%]");
+    for(Element table : tables){
+        Elements rows = table.select("> tbody > tr");
+        if(rows.size() == 10){
+            return rows;
+        }
+    }
+
+    return null;
   }
   
   private List<String> getKeywords(Element keywordElement) {
