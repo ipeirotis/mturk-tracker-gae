@@ -35,9 +35,13 @@ import com.tracker.entity.MarketStatistics;
 public class PullLatestTasks extends HttpServlet {
   
   private static final Logger logger = Logger.getLogger(PullLatestTasks.class.getName());
-  private static final String URL = "https://www.mturk.com/mturk/sorthits?"
-      + "searchSpec=HITGroupSearch%23T%231%2310%23-1%23T%23%21%23%21LastUpdatedTime%210%21%23%21"
-      + "&selectedSearchType=hitgroups&searchWords=&sortType=LastUpdatedTime%3A1&%2Fsort.x=14&%2Fsort.y=9";
+  private static final String URL = "https://www.mturk.com/mturk/viewhits?"
+      + "&searchSpec=HITGroupSearch%23T%238%2310%23-1%23T%23%21%23%21LastUpdatedTime%211%21%23%21"
+      + "&selectedSearchType=hitgroups" 
+      + "&searchWords=" 
+      + "&sortType=LastUpdatedTime%3A1";
+  
+  
   
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final DateFormat df = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
@@ -48,17 +52,23 @@ public class PullLatestTasks extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
     String pageNumberParam = req.getParameter("pageNumber");
-    Integer pageNumber = pageNumberParam == null ? 1 : Integer.valueOf(pageNumberParam);
+    Integer pageNumber = (pageNumberParam == null) ? 1 : Integer.valueOf(pageNumberParam);
+    if (pageNumber>20) {
+      logger.log(Level.WARNING, "MTurk does not return pages above 20 without sign-in.");
+      return;
+    }
+    String url = URL + "&pageNumber=" + pageNumber.toString();
+    
 
     try {
-        loadAndParse(pageNumber);
+        loadAndParse(url);
     } catch (Exception e) {
-        logger.log(Level.SEVERE, "Error parsing page", e);
+        logger.log(Level.SEVERE, "Error parsing page with URL: "+url, e);
     }
   }
   
-  private void loadAndParse(Integer pageNumber) throws Exception {
-    Document doc = Jsoup.connect(URL + "&pageNumber=" + pageNumber.toString()).get();
+  private void loadAndParse(String url) throws Exception {
+    Document doc = Jsoup.connect(url).get();
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();

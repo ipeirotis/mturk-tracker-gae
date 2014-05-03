@@ -35,7 +35,7 @@ private static final Logger logger = Logger.getLogger(ScheduleLatestTasksPulling
     queue.add(Builder
         .withUrl("/pullLatestTasks")
         .param("pageNumber", String.valueOf(pageNumber))
-        .etaMillis(System.currentTimeMillis())
+        .etaMillis(System.currentTimeMillis() + pageNumber*1000)
         .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
         .method(TaskOptions.Method.GET));
   }

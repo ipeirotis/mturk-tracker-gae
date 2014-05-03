@@ -2,7 +2,7 @@
 <cronentries>
 
   <cron>
-    <url>/scheduleLatestTasksPulling</url>
+    <url>/scheduleLatestTasksPulling?numOfPages=20</url>
     <description>PullLatestTasks</description>
     <schedule>every 1 minutes</schedule>
   </cron>
@@ -14,6 +14,6 @@
   <cron>
     <url>/scheduleStatComputation?duration=60&amp;date=1</url>
     <description>scheduleStatComputation</description>
-    <schedule>every day 00:01</schedule>
+    <schedule>every day 3:00</schedule>
   </cron>
 </cronentries>
