@@ -32,10 +32,13 @@ private static final Logger logger = Logger.getLogger(ScheduleLatestTasksPulling
   
   private void schedule(Integer pageNumber){
     Queue queue = QueueFactory.getDefaultQueue();
+    
+    // We put a spacing of 2.5 seconds between requests.
+    int timepause = 2500;
     queue.add(Builder
         .withUrl("/pullLatestTasks")
         .param("pageNumber", String.valueOf(pageNumber))
-        .etaMillis(System.currentTimeMillis() + pageNumber*1000)
+        .etaMillis(System.currentTimeMillis() + pageNumber*timepause)
         .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
         .method(TaskOptions.Method.GET));
   }
