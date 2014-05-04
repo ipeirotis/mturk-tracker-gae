@@ -3,15 +3,18 @@ package com.tracker.servlet.task;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -21,7 +24,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,10 +40,12 @@ public class PullLatestTasks extends HttpServlet {
   private static final String URL = "https://www.mturk.com/mturk/viewhits?"
       + "&searchSpec=HITGroupSearch%23T%238%2310%23-1%23T%23%21%23%21LastUpdatedTime%211%21%23%21"
       + "&selectedSearchType=hitgroups" 
-      + "&searchWords=" 
-      + "&sortType=LastUpdatedTime%3A1";
+      + "&searchWords=";
   
-  
+  private static final Set<String> sortTypes = new HashSet<String>(Arrays.asList("LastUpdatedTime", "NumHITs", 
+          "Reward", "LatestExpiration", "Title", "AssignmentDurationInSeconds"));
+  private static final String DEFAULT_SORT_TYPE = "LastUpdatedTime";
+  private static final String DEFAULT_SORT_DIRECTION = "1";
   
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final DateFormat df = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
@@ -57,8 +61,19 @@ public class PullLatestTasks extends HttpServlet {
       logger.log(Level.WARNING, "MTurk does not return pages above 20 without sign-in.");
       return;
     }
-    String url = URL + "&pageNumber=" + pageNumber.toString();
     
+    String sortType = req.getParameter("sortType");
+    if(sortType == null || !sortTypes.contains(sortType)){
+        sortType = DEFAULT_SORT_TYPE;
+    }
+    
+    String sortDirection = req.getParameter("sortDirection");
+    if(sortDirection == null || !"0".equals(sortDirection) || !"1".equals(sortDirection)){
+        sortDirection = DEFAULT_SORT_DIRECTION;
+    }
+    
+    String url = URL + "&pageNumber=" + pageNumber.toString()
+            + "&sortType=" + URLEncoder.encode(sortType + ":" + sortDirection, "UTF-8");
 
     try {
         loadAndParse(url);
