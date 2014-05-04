@@ -15,6 +15,7 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Builder;
+import com.googlecode.objectify.Key;
 import com.tracker.entity.HITgroup;
 
 @SuppressWarnings("serial")
@@ -26,9 +27,9 @@ public class ScheduleHITsTracking extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
     // Get the list of all HITgroups that are active.
-    List<HITgroup> groups = ofy().load().type(HITgroup.class).filter("active", true).list();
-    for (HITgroup group : groups) {
-      schedule(group.getGroupId());
+    Iterable<Key<HITgroup>> groups = ofy().load().type(HITgroup.class).filter("active", true).keys();
+    for (Key<HITgroup> group : groups) {
+      schedule(group.getRaw().getName());
     }
   }
 
@@ -38,7 +39,7 @@ public class ScheduleHITsTracking extends HttpServlet {
         .withUrl("/trackHits")
         .param("groupId", groupId)
         .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
+        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(0))
         .method(TaskOptions.Method.GET));
   }
 
