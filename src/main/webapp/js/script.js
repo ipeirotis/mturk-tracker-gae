@@ -15,28 +15,24 @@ function drawAnnotationChart(chart, data, options) {
 
 
 $(function() {
+	
+
+	
 	google.setOnLoadCallback(drawChart);
 	
-	var msChart = new google.visualization.AnnotationChart(document.getElementById('marketStatsChart'));
-	var msChartData = new google.visualization.DataTable();
-	msChartData.addColumn('datetime', 'Date');
-	msChartData.addColumn('number', 'HITs available');
-	msChartData.addColumn('number', 'HIT groups available');
+	var msChart;
+	var msChartData;
+	
+	var groupsChart;
+	var groupsChartData;
 
-	var groupsChart = new google.visualization.AnnotationChart(document.getElementById('groupsChart'));
-	var groupsChartData = new google.visualization.DataTable();
-	groupsChartData.addColumn('datetime', 'Date');
-	groupsChartData.addColumn('number', 'HIT groups posted');
+	var hitsChart;
+	var hitsChartData;
 
-	var hitsChart = new google.visualization.AnnotationChart(document.getElementById('hitsChart'));
-	var hitsChartData = new google.visualization.DataTable();
-	hitsChartData.addColumn('datetime', 'Date');
-	hitsChartData.addColumn('number', 'HITs posted');
-
-	var rewardsChart = new google.visualization.AnnotationChart(document.getElementById('rewardsChart'));
-	var rewardsChartData = new google.visualization.DataTable();
-	rewardsChartData.addColumn('datetime', 'Date');
-	rewardsChartData.addColumn('number', 'Rewards posted');
+	var rewardsChart;
+	var rewardsChartData;
+	
+	 init();
 	
 	$.datepicker.setDefaults($.extend({
 		dateFormat : 'mm/dd/yy',
@@ -60,14 +56,14 @@ $(function() {
 
 
 	$('#date_from').on('change', function() {
+		init();
 		fillArrivalData(host, protocol);
-		
 		drawChart();
 	});
 
 	$('#date_to').on('change', function() {
+		init();
 		fillArrivalData(host, protocol);
-		
 		drawChart();
 	});
 	
@@ -84,7 +80,6 @@ $(function() {
 		e.preventDefault();
 		$(this).tab('show');
 		activeTab = $(this).attr('href');
-
 		drawChart();
 	});
 
@@ -131,7 +126,28 @@ $(function() {
 		}
 
 	}
+	function init() {
+		if (!msChart) msChart = new google.visualization.AnnotationChart(document.getElementById('marketStatsChart'));
+		msChartData = new google.visualization.DataTable();
+		msChartData.addColumn('datetime', 'Date');
+		msChartData.addColumn('number', 'HITs available');
+		msChartData.addColumn('number', 'HIT groups available');
 
+		if (!groupsChart) groupsChart = new google.visualization.AnnotationChart(document.getElementById('groupsChart'));
+		groupsChartData = new google.visualization.DataTable();
+		groupsChartData.addColumn('datetime', 'Date');
+		groupsChartData.addColumn('number', 'HIT groups posted');
+
+		if (!hitsChart) hitsChart = new google.visualization.AnnotationChart(document.getElementById('hitsChart'));
+		hitsChartData = new google.visualization.DataTable();
+		hitsChartData.addColumn('datetime', 'Date');
+		hitsChartData.addColumn('number', 'HITs posted');
+
+		if (!rewardsChart) rewardsChart = new google.visualization.AnnotationChart(document.getElementById('rewardsChart'));
+		rewardsChartData = new google.visualization.DataTable();
+		rewardsChartData.addColumn('datetime', 'Date');
+		rewardsChartData.addColumn('number', 'Rewards posted');
+	}
 
 });
 
