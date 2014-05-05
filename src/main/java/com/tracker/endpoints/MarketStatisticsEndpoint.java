@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Named;
@@ -23,51 +24,51 @@ import com.tracker.entity.MarketStatistics;
 @Api(name = "mturk", description = "The API for mturk-tracker", version = "v1")
 public class MarketStatisticsEndpoint {
 
-	private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+  private SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
 
-	@ApiMethod(name = "marketStatistics.list", path = "marketStatistics/list", httpMethod = HttpMethod.GET)
-	public CollectionResponse<MarketStatistics> list(@Named("from") String from,
-			@Named("to") String to, @Nullable @Named("cursor") String cursorString) throws ParseException {
-		
-		List<MarketStatistics> result = new ArrayList<MarketStatistics>();
-		
-		Calendar dateFrom = Calendar.getInstance();
-		dateFrom.setTime(formatter.parse(from));
-		dateFrom.set(Calendar.HOUR_OF_DAY, 0);
-		dateFrom.set(Calendar.MINUTE, 0);
-		dateFrom.set(Calendar.SECOND, 0);
-		
-		
-		Calendar dateTo = Calendar.getInstance();
-		dateTo.setTime(formatter.parse(to));
-		dateTo.set(Calendar.HOUR_OF_DAY, 23);
-		dateTo.set(Calendar.MINUTE, 59);
-		dateTo.set(Calendar.SECOND, 59);
-		
-		Query<MarketStatistics> query = ofy().load().type(MarketStatistics.class)
-				.filter("timestamp >=", dateFrom.getTime())
-				.filter("timestamp <=", dateTo.getTime())
-				.limit(1440); // One day of statistics
+  @ApiMethod(name = "marketStatistics.list", path = "marketStatistics/list", httpMethod = HttpMethod.GET)
+  public CollectionResponse<MarketStatistics> list(@Named("from") String from, @Named("to") String to,
+      @Nullable @Named("cursor") String cursorString) throws ParseException {
 
-	    if (cursorString != null){
-	        query = query.startAt(Cursor.fromWebSafeString(cursorString));
-	    }
+    List<MarketStatistics> result = new ArrayList<MarketStatistics>();
 
-	    boolean continu = false;
-	    QueryResultIterator<MarketStatistics> iterator = query.iterator();
-	    while (iterator.hasNext()) {
-	    	MarketStatistics marketStatistics = iterator.next();
-	    	result.add(marketStatistics);
-	        continu = true;
-	    }
+    Calendar dateFrom = Calendar.getInstance();
+    dateFrom.setTime(formatter.parse(from));
+    dateFrom.set(Calendar.HOUR_OF_DAY, 0);
+    dateFrom.set(Calendar.MINUTE, 0);
+    dateFrom.set(Calendar.SECOND, 0);
 
-	    if (continu) {
-	        Cursor cursor = iterator.getCursor();
-	        return CollectionResponse.<MarketStatistics> builder().setItems(result)
-			        .setNextPageToken(cursor.toWebSafeString()).build();
-	    }else{
-	    	return CollectionResponse.<MarketStatistics> builder().setItems(result).build();
-	    }
-	}
+    Calendar dateTo = Calendar.getInstance();
+    dateTo.setTime(formatter.parse(to));
+    dateTo.set(Calendar.HOUR_OF_DAY, 23);
+    dateTo.set(Calendar.MINUTE, 59);
+    dateTo.set(Calendar.SECOND, 59);
+
+    Query<MarketStatistics> query = ofy().load().type(MarketStatistics.class)
+        .filter("timestamp >=", dateFrom.getTime())
+        .filter("timestamp <=", dateTo.getTime())
+        .order("timestamp")
+        .limit(2880); 
+
+    if (cursorString != null) {
+      query = query.startAt(Cursor.fromWebSafeString(cursorString));
+    }
+
+    boolean cont = false;
+    QueryResultIterator<MarketStatistics> iterator = query.iterator();
+
+    while (iterator.hasNext()) {
+      MarketStatistics marketStatistics = iterator.next();
+      result.add(marketStatistics);
+      cont = true;
+    }
+
+    if (cont) {
+      Cursor cursor = iterator.getCursor();
+      return CollectionResponse.<MarketStatistics> builder().setItems(result).setNextPageToken(cursor.toWebSafeString()).build();
+    } else {
+      return CollectionResponse.<MarketStatistics> builder().setItems(result).build();
+    }
+  }
 
 }

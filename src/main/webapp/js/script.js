@@ -4,6 +4,8 @@ google.load('visualization', '1.1', {
 
 $(function() {
 	google.setOnLoadCallback(drawChart);
+	
+
 
 	var activeTab = '#marketStats';
 
@@ -48,6 +50,8 @@ $(function() {
 	$('#date_to').datepicker('setDate', new Date());
 	$('#date_from').datepicker('option', 'maxDate', maxDate);
 	$('#date_to').datepicker('option', 'maxDate', maxDate);
+	
+	
 
 	$('#date_from').on('change', function() {
 		drawChart();
@@ -84,82 +88,81 @@ $(function() {
 	var rewardsChartData = new google.visualization.DataTable();
 	rewardsChartData.addColumn('date', 'Date');
 	rewardsChartData.addColumn('number', 'Rewards posted');
+	
+	var host = window.location.host;
+	var protocol = host.indexOf('localhost', 0) == 0 ? 'http' : 'https';
+	fillArrivalData(host, protocol);
+	fillStatisticsData(host, protocol, null);
 
-	function drawChart() {
-		var host = window.location.host;
-		var protocol = host.indexOf('localhost', 0) == 0 ? 'http' : 'https';
+	
+	function fillArrivalData(host, protocol) {
 		var url = protocol + '://' + host
-				+ '/_ah/api/mturk/v1/arrivalCompletions/list?from='
-				+ $("#date_from").val() + '&to=' + $("#date_to").val();
+		+ '/_ah/api/mturk/v1/arrivalCompletions/list?from='
+		+ $("#date_from").val() + '&to=' + $("#date_to").val();
 
-		$.ajax({
-			type : 'GET',
-			url : url,
-			dataType : 'json'
-		}).done(
-				function(response) {
-
+		$.ajax({type : 'GET',  url : url, dataType : 'json'})
+			.done(function(response) {
+		
 					if (response.items) {
 						$.each(response.items, function(index, item) {
 							groupsChartData.addRows([ [ new Date(item.from),
-									parseInt(item.hitGroupsAvailable) ] ]);
+									parseInt(item.hitGroupsArrived) ] ]);
 							hitsChartData.addRows([ [ new Date(item.from),
 									parseInt(item.hitsArrived) ] ]);
 							rewardsChartData.addRows([ [ new Date(item.from),
 									parseInt(item.rewardsArrived) / 100 ] ]);
-
+		
 						});
 					}
+					drawChart();
+		
 
-					if (activeTab == '#marketStats') {
-						drawMsChart();
-					} else if (activeTab == '#hits') {
-						drawHitsChart();
-					} else if (activeTab == '#rewards') {
-						drawRewardsChart();
-					} else if (activeTab == '#groups') {
-						drawGroupsChart();
-					}
 				}).fail(function(e) {
 			// TODO
 		});
-
-		while (true) {
-
-			var url = protocol + '://' + host
-					+ '/_ah/api/mturk/v1/marketStatistics/list?from='
-					+ $("#date_from").val() + '&to=' + $("#date_to").val();
+	}
+	
+	function fillStatisticsData(host, protocol, cursor) {
+		var url = protocol + '://' + host
+		+ '/_ah/api/mturk/v1/marketStatistics/list?from='
+		+ $("#date_from").val() + '&to=' + $("#date_to").val();
+		
+		if (cursor) {
+			url = url +'&cursor=' + cursor;
+		}
 
 			$.ajax({ type : 'GET',	url : url,	dataType : 'json' })
-					.done(function(response) {
+			.done(function(response) {
 
-								if (response.items) {
-									$.each(response.items, function(index, item) {
-										msChartData.addRows([ [new Date(item.timestamp), parseInt(item.hitsAvailable),	parseInt(item.hitGroupsAvailable) ] ]);	});
-								}
+						if (response.items) {
+							$.each(response.items, function(index, item) {
+								msChartData.addRows([ [new Date(item.timestamp), parseInt(item.hitsAvailable),	parseInt(item.hitGroupsAvailable) ] ]);	});
+						}
 
-								if (activeTab == '#marketStats') {
-									drawMsChart();
-								} else if (activeTab == '#hits') {
-									drawHitsChart();
-								} else if (activeTab == '#rewards') {
-									drawRewardsChart();
-								} else if (activeTab == '#groups') {
-									drawGroupsChart();
-								}
+						if (response.nextPageToken) {
+							fillStatisticsData(host, protocol, response.nextPageToken);
+						} else{
+							drawChart();
+						}
 
-								if (response.nextPageToken) {
-									url = protocol + '://'	+ host + '/_ah/api/mturk/v1/marketStatistics/list?from='
-									+ $("#date_from").val() + '&to=' + $("#date_to").val() + '&cursor=' + response.nextPageToken;
-								} else {
-									break;
-								}
+					}).fail(function(e) {
+				// TODO
+			});
 
-							}).fail(function(e) {
-						// TODO
-					});
+	}
+	
+	function drawChart() {
 
+		if (activeTab == '#marketStats') {
+			drawMsChart();
+		} else if (activeTab == '#hits') {
+			drawHitsChart();
+		} else if (activeTab == '#rewards') {
+			drawRewardsChart();
+		} else if (activeTab == '#groups') {
+			drawGroupsChart();
 		}
+		
 
 	}
 

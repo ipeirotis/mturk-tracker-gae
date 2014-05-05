@@ -3,10 +3,12 @@
     <application>mturk-tracker</application>
     <version>${appengine.app.version}</version>
     <threadsafe>true</threadsafe>
-
+  <static-files>
+    <include path="/js/**.js" expiration="1s" />
+  </static-files>
     <system-properties>
         <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
     </system-properties>
     
-    <sessions-enabled>true</sessions-enabled>
+    <sessions-enabled>false</sessions-enabled>
 </appengine-web-app>
