@@ -70,23 +70,23 @@ $(function() {
 
 	var msChart;// marketStatistics chart
 	var msChartData = new google.visualization.DataTable();
-	msChartData.addColumn('date', 'Date');
+	msChartData.addColumn('datetime', 'Date');
 	msChartData.addColumn('number', 'HITs available');
 	msChartData.addColumn('number', 'HIT groups available');
 
 	var groupsChart;
 	var groupsChartData = new google.visualization.DataTable();
-	groupsChartData.addColumn('date', 'Date');
+	groupsChartData.addColumn('datetime', 'Date');
 	groupsChartData.addColumn('number', 'HIT groups posted');
 
 	var hitsChart;
 	var hitsChartData = new google.visualization.DataTable();
-	hitsChartData.addColumn('date', 'Date');
+	hitsChartData.addColumn('datetime', 'Date');
 	hitsChartData.addColumn('number', 'HITs posted');
 
 	var rewardsChart;
 	var rewardsChartData = new google.visualization.DataTable();
-	rewardsChartData.addColumn('date', 'Date');
+	rewardsChartData.addColumn('datetime', 'Date');
 	rewardsChartData.addColumn('number', 'Rewards posted');
 	
 	var host = window.location.host;
