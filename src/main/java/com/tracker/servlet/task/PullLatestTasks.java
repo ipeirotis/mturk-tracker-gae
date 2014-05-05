@@ -77,22 +77,24 @@ public class PullLatestTasks extends HttpServlet {
             + "&sortType=" + URLEncoder.encode(sortType + ":" + sortDirection, "UTF-8");
 
     try {
-        loadAndParse(url);
+        loadAndParse(url, pageNumber==1 && sortType == DEFAULT_SORT_TYPE && sortDirection == DEFAULT_SORT_DIRECTION );
     } catch (Exception e) {
         logger.log(Level.SEVERE, "Error parsing page with URL: "+url, e);
     }
   }
   
-  private void loadAndParse(String url) throws Exception {
+  private void loadAndParse(String url, boolean fetchStatistics) throws Exception {
     Document doc = Jsoup.connect(url).get();
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
-    MarketStatistics statistics = extractMarketStatistics(doc);
-    statistics.setTimestamp(now);
-    ofy().save().entity(statistics);
+    if (fetchStatistics) {
+      MarketStatistics statistics = extractMarketStatistics(doc);
+      statistics.setTimestamp(now);
+      ofy().save().entity(statistics);
+    }
 
     Elements rows = getHitRows(doc);
     
