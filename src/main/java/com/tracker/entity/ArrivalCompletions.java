@@ -17,26 +17,22 @@ public class ArrivalCompletions {
 	private Date from;
 	@Index
 	private Date to;
+	//private Integer hitGroupsAvailable;
+	private Double hitGroupsAvailableUI;
 	private Long hitGroupsArrived;
 	private Long hitGroupsCompleted;
+	//private Double hitsAvailable;
+	private Double hitsAvailableUI;
 	private Long hitsArrived;
 	private Long hitsCompleted;
+	//private Double rewardsAvailable;
 	private Long rewardsArrived;
 	private Long rewardsCompleted;
 	private Integer length;
 
-	public ArrivalCompletions(Date from, Date to, Long hitGroupsArrived,
-			Long hitGroupsCompleted, Long hitsArrived, Long hitsCompleted,
-			Long rewardsArrived, Long rewardsCompleted, Integer length) {
+	public ArrivalCompletions(Date from, Date to) {
 		this.from = from;
 		this.to = to;
-		this.hitGroupsArrived = hitGroupsArrived;
-		this.hitGroupsCompleted = hitGroupsCompleted;
-		this.hitsArrived = hitsArrived;
-		this.hitsCompleted = hitsCompleted;
-		this.rewardsArrived = rewardsArrived;
-		this.rewardsCompleted = rewardsCompleted;
-		this.length = length;
 	}
 
 	// for objectify
@@ -44,7 +40,25 @@ public class ArrivalCompletions {
 	private ArrivalCompletions() {
 	}
 
-	public Long getId() {
+  public Double getHitGroupsAvailableUI() {
+    return hitGroupsAvailableUI;
+  }
+
+  public void setHitGroupsAvailableUI(Double hitGroupsAvailableUI) {
+    this.hitGroupsAvailableUI = hitGroupsAvailableUI;
+  }
+
+
+  public Double getHitsAvailableUI() {
+    return hitsAvailableUI;
+  }
+
+  public void setHitsAvailableUI(Double hitsAvailableUI) {
+    this.hitsAvailableUI = hitsAvailableUI;
+  }
+
+
+  public Long getId() {
 		return id;
 	}
 

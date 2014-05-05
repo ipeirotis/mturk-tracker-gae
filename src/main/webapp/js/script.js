@@ -60,20 +60,18 @@ $(function() {
 
 
 	$('#date_from').on('change', function() {
-		fillStatisticsData(host, protocol, null);
 		fillArrivalData(host, protocol);
 		
 		drawChart();
 	});
 
 	$('#date_to').on('change', function() {
-		fillStatisticsData(host, protocol, null);
 		fillArrivalData(host, protocol);
 		
 		drawChart();
 	});
 	
-	var activeTab = '#rewards';
+	var activeTab = '#marketStats';
 
 	// charts
 	var options = {
@@ -94,7 +92,6 @@ $(function() {
 	
 	var host = window.location.host;
 	var protocol = host.indexOf('localhost', 0) == 0 ? 'http' : 'https';
-	fillStatisticsData(host, protocol, null);
 	fillArrivalData(host, protocol);
 	
 	drawChart();
@@ -106,6 +103,7 @@ $(function() {
 			.done(function(response) {
 				if (response.items) {
 					$.each(response.items, function(index, item) {
+						msChartData.addRows([ [new Date(item.from), item.hitsAvailableUI,	item.hitGroupsAvailableUI ] ]);	
 						groupsChartData.addRows([ [ new Date(item.from), parseInt(item.hitGroupsArrived) ] ]);
 						hitsChartData.addRows([ [ new Date(item.from),	parseInt(item.hitsArrived) ] ]);
 						rewardsChartData.addRows([ [ new Date(item.from), parseInt(item.rewardsArrived) / 100 ] ]);
@@ -116,35 +114,6 @@ $(function() {
 			})
 			.complete(function(e) {
 				drawChart();
-			})
-			;
-	}
-	
-	function fillStatisticsData(host, protocol, cursor) {
-		var url = protocol + '://' + host + '/_ah/api/mturk/v1/marketStatistics/list?from='	+ $("#date_from").val() + '&to=' + $("#date_to").val();
-		
-		if (cursor) {
-			url = url +'&cursor=' + cursor;
-		}
-
-		$.ajax({ type : 'GET',	url : url,	dataType : 'json' })
-			.done(function(response) {
-				if (response.items) {
-					$.each(response.items, function(index, item) {
-						msChartData.addRows([ [new Date(item.timestamp), parseInt(item.hitsAvailable),	parseInt(item.hitGroupsAvailable) ] ]);	
-					});
-				}
-				if (response.nextPageToken) {
-					fillStatisticsData(host, protocol, response.nextPageToken);
-				} 
-			})
-			.fail(function(e) {
-				// TODO
-			})
-			.complete(function(e) {
-				if (cursor==null) {
-					drawChart();
-				}
 			})
 			;
 	}
