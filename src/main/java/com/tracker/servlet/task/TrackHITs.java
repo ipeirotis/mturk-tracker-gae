@@ -20,8 +20,6 @@ import com.tracker.entity.HITinstance;
 
 @SuppressWarnings("serial")
 public class TrackHITs extends HttpServlet {
-
-  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(TrackHITs.class.getName());
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final String NOT_AVAILABLE_ALERT = "There are no more available HITs in this group";
