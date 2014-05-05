@@ -32,6 +32,8 @@ import org.jsoup.select.Elements;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 import com.tracker.entity.MarketStatistics;
+import com.tracker.util.SafeCurrencyFormat;
+import com.tracker.util.SafeDateFormat;
 
 @SuppressWarnings("serial")
 public class PullLatestTasks extends HttpServlet {
@@ -46,17 +48,18 @@ public class PullLatestTasks extends HttpServlet {
           "Reward", "LatestExpiration", "Title", "AssignmentDurationInSeconds"));
   private static final String DEFAULT_SORT_TYPE = "LastUpdatedTime";
   private static final String DEFAULT_SORT_DIRECTION = "1";
+  private static final Integer DEFAULT_PAGE_NUMBER = 1;
   
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
-  private static final DateFormat df = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
-  private static final NumberFormat cf = NumberFormat.getCurrencyInstance(Locale.US);
+  private static final DateFormat df = SafeDateFormat.forPattern("MMM dd, yyyy");
+  private static final NumberFormat cf = SafeCurrencyFormat.forLocale(Locale.US);
   
   private static final Pattern timePattern = Pattern.compile("\\d+ \\w+");      
   
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
     String pageNumberParam = req.getParameter("pageNumber");
-    Integer pageNumber = (pageNumberParam == null) ? 1 : Integer.valueOf(pageNumberParam);
+    Integer pageNumber = (pageNumberParam == null) ? DEFAULT_PAGE_NUMBER : Integer.valueOf(pageNumberParam);
     if (pageNumber>20) {
       logger.log(Level.WARNING, "MTurk does not return pages above 20 without sign-in.");
       return;
@@ -76,22 +79,27 @@ public class PullLatestTasks extends HttpServlet {
             + "&sortType=" + URLEncoder.encode(sortType + ":" + sortDirection, "UTF-8");
 
     try {
-        loadAndParse(url);
+      boolean fetchMarketStatistics = (pageNumber==DEFAULT_PAGE_NUMBER 
+                                      && sortType==DEFAULT_SORT_TYPE 
+                                      && sortDirection == DEFAULT_SORT_DIRECTION);
+        loadAndParse(url, fetchMarketStatistics);
     } catch (Exception e) {
         logger.log(Level.SEVERE, "Error parsing page with URL: "+url, e);
     }
   }
   
-  private void loadAndParse(String url) throws Exception {
+  private void loadAndParse(String url, boolean fetchStatistics) throws Exception {
     Document doc = Jsoup.connect(url).get();
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
-    MarketStatistics statistics = extractMarketStatistics(doc);
-    statistics.setTimestamp(now);
-    ofy().save().entity(statistics);
+    if (fetchStatistics) {
+      MarketStatistics statistics = extractMarketStatistics(doc);
+      statistics.setTimestamp(now);
+      ofy().save().entity(statistics);
+    }
 
     Elements rows = getHitRows(doc);
     
@@ -100,6 +108,8 @@ public class PullLatestTasks extends HttpServlet {
         return;
     }
     Iterator<Element> rowsIterator = rows.iterator();
+    String groupId = null;
+    String date = null;
     
     while(rowsIterator.hasNext()) {
         try{
@@ -115,12 +125,12 @@ public class PullLatestTasks extends HttpServlet {
             Element keywordElement = row.select("a:matchesOwn(Keywords+)").first();
             Element qualificationElement = row.select("a:matchesOwn(Qualifications Required+)").first();
 
-            String groupId = getQueryParamValue(groupElement.attr("href"), "groupId");
+            groupId = getQueryParamValue(groupElement.attr("href"), "groupId");
             if(groupId == null){
                 continue;
             }
 
-            String date = expirationDateElement.parent().nextElementSibling().text();
+            date = expirationDateElement.parent().nextElementSibling().text();
             Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
             Integer hitsAvailable = Integer.parseInt(hitsAvailableElement.parent().nextElementSibling().text());
             Number reward = cf.parse(rewardElement.parent().nextElementSibling().child(0).text());

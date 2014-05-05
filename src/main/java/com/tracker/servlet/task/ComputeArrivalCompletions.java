@@ -5,12 +5,18 @@ import static com.tracker.ofy.OfyService.ofy;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hsqldb.lib.Set;
+
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.cmd.QueryKeys;
 import com.tracker.entity.ArrivalCompletions;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
@@ -80,20 +86,26 @@ public class ComputeArrivalCompletions extends HttpServlet {
   
   private void compute(Calendar from, Calendar to, Integer diff){
     
-    List<HITgroup> arrivedGroups = ofy().load().type(HITgroup.class)
+    Iterable<Key<HITgroup>> arrivedGroups = ofy().load().type(HITgroup.class)
         .filter("firstSeen >", from.getTime())
         .filter("firstSeen <", to.getTime())
-        .list();
+        .keys();
+   
+    int cnt = 0;
+    for (Key<HITgroup> k : arrivedGroups) cnt++;
     
-    Long hitGroupsArrived = new Long(arrivedGroups.size());
+    Long hitGroupsArrived = new Long( cnt );
     
-    List<HITgroup> completedGroups = ofy().load().type(HITgroup.class)
+    Iterable<Key<HITgroup>> completedGroups = ofy().load().type(HITgroup.class)
         .filter("lastSeen >", from.getTime())
         .filter("lastSeen <", to.getTime())
         .filter("active", Boolean.FALSE)
-        .list();
+        .keys();
     
-    Long hitGroupsCompleted = new Long(completedGroups.size());
+    cnt = 0;
+    for (Key<HITgroup> k : completedGroups) cnt++;
+    
+    Long hitGroupsCompleted = new Long( cnt );
     
     List<HITinstance> hitInstances = ofy().load().type(HITinstance.class)
         .filter("timestamp >", from.getTime())
