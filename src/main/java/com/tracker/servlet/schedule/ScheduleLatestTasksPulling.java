@@ -32,7 +32,7 @@ public class ScheduleLatestTasksPulling extends HttpServlet {
   }
   
   private void schedule(Integer pageNumber, String sortType, String sortDirection){
-    Queue queue = QueueFactory.getDefaultQueue();
+    Queue queue = QueueFactory.getQueue("pullLatestTasks");
     
     // We put a spacing of 2.5 seconds between requests.
     int timepause = 2500;

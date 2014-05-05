@@ -31,13 +31,6 @@ public class MarketStatisticsEndpoint {
 		
 		List<MarketStatistics> result = new ArrayList<MarketStatistics>();
 		
-		Calendar dateFrom = Calendar.getInstance();
-		dateFrom.setTime(formatter.parse(from));
-		dateFrom.set(Calendar.HOUR_OF_DAY, 0);
-		dateFrom.set(Calendar.MINUTE, 0);
-		dateFrom.set(Calendar.SECOND, 0);
-		
-		
 		Calendar dateTo = Calendar.getInstance();
 		dateTo.setTime(formatter.parse(to));
 		dateTo.set(Calendar.HOUR_OF_DAY, 23);
@@ -45,9 +38,8 @@ public class MarketStatisticsEndpoint {
 		dateTo.set(Calendar.SECOND, 59);
 		
 		Query<MarketStatistics> query = ofy().load().type(MarketStatistics.class)
-				.filter("timestamp >=", dateFrom.getTime())
-				.filter("timestamp <=", dateTo.getTime())
-				.limit(1440); // One day of statistics
+				.filter("timestamp >=", formatter.parse(from))
+				.filter("timestamp <=", dateTo).limit(1000);
 
 	    if (cursorString != null){
 	        query = query.startAt(Cursor.fromWebSafeString(cursorString));

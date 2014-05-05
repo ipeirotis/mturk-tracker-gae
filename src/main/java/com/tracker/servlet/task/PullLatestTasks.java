@@ -47,7 +47,6 @@ public class PullLatestTasks extends HttpServlet {
           "Reward", "LatestExpiration", "Title", "AssignmentDurationInSeconds"));
   private static final String DEFAULT_SORT_TYPE = "LastUpdatedTime";
   private static final String DEFAULT_SORT_DIRECTION = "1";
-  private static final Integer DEFAULT_PAGE_NUMBER = 1;
   
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final DateFormat df = SafeDateFormat.forPattern("MMM dd, yyyy");
@@ -58,7 +57,7 @@ public class PullLatestTasks extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
     String pageNumberParam = req.getParameter("pageNumber");
-    Integer pageNumber = (pageNumberParam == null) ? DEFAULT_PAGE_NUMBER : Integer.valueOf(pageNumberParam);
+    Integer pageNumber = (pageNumberParam == null) ? 1 : Integer.valueOf(pageNumberParam);
     if (pageNumber>20) {
       logger.log(Level.WARNING, "MTurk does not return pages above 20 without sign-in.");
       return;
@@ -78,27 +77,22 @@ public class PullLatestTasks extends HttpServlet {
             + "&sortType=" + URLEncoder.encode(sortType + ":" + sortDirection, "UTF-8");
 
     try {
-      boolean fetchMarketStatistics = (pageNumber==DEFAULT_PAGE_NUMBER 
-                                      && sortType==DEFAULT_SORT_TYPE 
-                                      && sortDirection == DEFAULT_SORT_DIRECTION);
-        loadAndParse(url, fetchMarketStatistics);
+        loadAndParse(url);
     } catch (Exception e) {
         logger.log(Level.SEVERE, "Error parsing page with URL: "+url, e);
     }
   }
   
-  private void loadAndParse(String url, boolean fetchStatistics) throws Exception {
+  private void loadAndParse(String url) throws Exception {
     Document doc = Jsoup.connect(url).get();
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
-    if (fetchStatistics) {
-      MarketStatistics statistics = extractMarketStatistics(doc);
-      statistics.setTimestamp(now);
-      ofy().save().entity(statistics);
-    }
+    MarketStatistics statistics = extractMarketStatistics(doc);
+    statistics.setTimestamp(now);
+    ofy().save().entity(statistics);
 
     Elements rows = getHitRows(doc);
     

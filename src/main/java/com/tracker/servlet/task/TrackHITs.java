@@ -40,8 +40,6 @@ public class TrackHITs extends HttpServlet {
 
     Document doc = Jsoup.connect(PREVIEW_URL + group.getGroupId()).get();
     Element alertboxHeader = doc.getElementById("alertboxHeader");
-    
-    Date now = new Date();
 
     if (alertboxHeader != null && alertboxHeader.text().startsWith(NOT_AVAILABLE_ALERT)) {
       // We cannot find the HIT anymore. So we set the "active" flag for the
@@ -53,12 +51,12 @@ public class TrackHITs extends HttpServlet {
 
       Integer hitsDiff = 0 - recentHITsAvailable;
       Integer rewardsDiff = 0 - recentRewardsAvailable;
-      HITinstance hitinstance = new HITinstance(group.getGroupId(), now, 0, hitsDiff, 0, rewardsDiff);
+      HITinstance hitinstance = new HITinstance(group.getGroupId(), new Date(), 0, hitsDiff, 0, rewardsDiff);
       ofy().save().entity(hitinstance);
     } else {
       // We found the HIT on the system, so we update the lastSeen variable for
       // the HITgroup
-      group.setLastSeen(now);
+      group.setLastSeen(new Date());
       ofy().save().entity(group);
 
       Element hitElement = doc.select("a:matchesOwn(HITs Available:+)").first();
@@ -71,7 +69,7 @@ public class TrackHITs extends HttpServlet {
       if (hitsDiff != 0) {
         // We only save a new HIT instance if there is a change compared to the
         // prior HITinstance
-        HITinstance hitinstance = new HITinstance(group.getGroupId(), now, iHits, hitsDiff, group.getReward() * iHits,
+        HITinstance hitinstance = new HITinstance(group.getGroupId(), new Date(), iHits, hitsDiff, group.getReward() * iHits,
             rewardsDiff);
         ofy().save().entity(hitinstance);
       }
