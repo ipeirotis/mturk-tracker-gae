@@ -4,6 +4,7 @@ import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -19,14 +20,16 @@ import com.tracker.entity.HITinstance;
 
 @SuppressWarnings("serial")
 public class TrackHITs extends HttpServlet {
-
-  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(TrackHITs.class.getName());
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
   private static final String NOT_AVAILABLE_ALERT = "There are no more available HITs in this group";
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    loadAndParse(req.getParameter("groupId"));
+      try{
+          loadAndParse(req.getParameter("groupId"));
+      }catch(Exception e){
+          logger.log(Level.SEVERE, "Error tracking HITgroup, id= " + req.getParameter("groupId"), e);
+      }
   }
 
   private void loadAndParse(String groupId) throws IOException {

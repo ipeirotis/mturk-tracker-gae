@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,6 +31,8 @@ import org.jsoup.select.Elements;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 import com.tracker.entity.MarketStatistics;
+import com.tracker.util.SafeCurrencyFormat;
+import com.tracker.util.SafeDateFormat;
 
 @SuppressWarnings("serial")
 public class PullLatestTasks extends HttpServlet {
@@ -48,8 +49,8 @@ public class PullLatestTasks extends HttpServlet {
   private static final String DEFAULT_SORT_DIRECTION = "1";
   
   private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
-  private static final DateFormat df = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
-  private static final NumberFormat cf = NumberFormat.getCurrencyInstance(Locale.US);
+  private static final DateFormat df = SafeDateFormat.forPattern("MMM dd, yyyy");
+  private static final NumberFormat cf = SafeCurrencyFormat.forLocale(Locale.US);
   
   private static final Pattern timePattern = Pattern.compile("\\d+ \\w+");      
   
@@ -100,6 +101,8 @@ public class PullLatestTasks extends HttpServlet {
         return;
     }
     Iterator<Element> rowsIterator = rows.iterator();
+    String groupId = null;
+    String date = null;
     
     while(rowsIterator.hasNext()) {
         try{
@@ -115,12 +118,12 @@ public class PullLatestTasks extends HttpServlet {
             Element keywordElement = row.select("a:matchesOwn(Keywords+)").first();
             Element qualificationElement = row.select("a:matchesOwn(Qualifications Required+)").first();
 
-            String groupId = getQueryParamValue(groupElement.attr("href"), "groupId");
+            groupId = getQueryParamValue(groupElement.attr("href"), "groupId");
             if(groupId == null){
                 continue;
             }
 
-            String date = expirationDateElement.parent().nextElementSibling().text();
+            date = expirationDateElement.parent().nextElementSibling().text();
             Date expirationDate = df.parse(date.substring(0, date.indexOf(" (")-1));
             Integer hitsAvailable = Integer.parseInt(hitsAvailableElement.parent().nextElementSibling().text());
             Number reward = cf.parse(rewardElement.parent().nextElementSibling().child(0).text());
