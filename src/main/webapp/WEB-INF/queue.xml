@@ -1,0 +1,14 @@
+<queue-entries>
+  <queue>
+    <name>pullLatestTasks</name>
+    <rate>5/s</rate>
+    <bucket-size>1</bucket-size>
+    <max-concurrent-requests>1</max-concurrent-requests>
+  </queue>
+  <queue>
+    <name>trackHITs</name>
+    <rate>5/s</rate>
+    <bucket-size>1</bucket-size>
+    <max-concurrent-requests>1</max-concurrent-requests>
+  </queue>
+</queue-entries>
