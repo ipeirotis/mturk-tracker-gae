@@ -11,9 +11,24 @@
     <description>Track active HIT groups</description>
     <schedule>every 5 minutes</schedule>
   </cron>
+    <cron>
+    <url>/scheduleStatComputation?duration=60&amp;date=0</url>
+    <description>Almost real-time updating of the displayed statistics</description>
+    <schedule>every 1 hours</schedule>
+  </cron>
   <cron>
     <url>/scheduleStatComputation?duration=60&amp;date=1</url>
     <description>scheduleStatComputation</description>
     <schedule>every day 3:00</schedule>
   </cron>
+  <cron>
+    <url>/scheduleStatComputation?duration=60&amp;date=2</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 3:05</schedule>
+  </cron>
+    <cron>
+    <url>/scheduleStatComputation?duration=60&amp;date=3</url>
+    <description>scheduleStatComputation</description>
+    <schedule>every day 3:10</schedule>
+  </cron>  
 </cronentries>
