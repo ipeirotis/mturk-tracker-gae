@@ -1,0 +1,31 @@
+<div class="row">
+	<div class="col-md-4">
+		<p class="input-group">
+			<input type="text" class="form-control" datepicker-popup="MM/dd/yyyy" ng-model="from" is-open="openedFrom" 
+			datepicker-options="dateOptions" show-weeks="false" show-button-bar="false" close-text="Close" />
+			<span class="input-group-btn">
+			<button type="button" class="btn btn-default" ng-click="openFromPicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+			</span>
+		</p>
+	</div>
+	<div class="col-md-4">
+		<p class="input-group">
+			<input type="text" class="form-control" datepicker-popup="MM/dd/yyyy" ng-model="to" is-open="openedTo" 
+			datepicker-options="dateOptions" show-weeks="false" show-button-bar="false" close-text="Close" />
+			<span class="input-group-btn">
+			<button type="button" class="btn btn-default" ng-click="openToPicker($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+			</span>
+		</p>
+	</div>
+</div>
+<ul class="nav nav-pills" ng-model="activePill" pills>
+  <li class="active"><a href="" id="marketStatisticsChartPill" ng-click="draw('marketStatisticsChart')">Market statistics</a></li>
+  <li><a href="" id="groupsChartPill" ng-click="draw('groupsChart')">HIT groups posted</a></li>
+  <li><a href="" id="hitsChartPill" ng-click="draw('hitsChart')">HITs posted</a></li>
+  <li><a href="" id="rewardsChartPill" ng-click="draw('rewardsChart')">Rewards posted</a></li>
+</ul>
+
+<div google-chart chart="marketStatisticsChart" id="marketStatisticsChart" style="display:block;width:100%;height:400px;" on-ready="chartReady('marketStatisticsChart')"/>
+<div google-chart chart="groupsChart" id="groupsChart" style="display:none;width:100%;height:400px;" on-ready="chartReady('groupsChart')"/>
+<div google-chart chart="hitsChart" id="hitsChart" style="display:none;width:100%;height:400px;" on-ready="chartReady('hitsChart')"/>
+<div google-chart chart="rewardsChart" id="rewardsChart" style="display:none;width:100%;height:400px;" on-ready="chartReady('rewardsChart')"/>
