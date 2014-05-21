@@ -3,6 +3,7 @@ angular.module('mturk', ['ngRoute', 'ngSanitize', 'ui.bootstrap', 'googlechart']
     $routeProvider
     .when('/api', {templateUrl: views.api, controller: 'ApiController'})
     .when('/arrivals', {templateUrl: views.arrivals, controller: 'ArrivalsController'})
+    .when('/completions', {templateUrl: views.completions, controller: 'CompletionsController'})
     .when('/general', {templateUrl: views.general, controller: 'GeneralController'})
     .when('/requesters', {templateUrl: views.requesters, controller: 'RequestersController'})
     .when('/search', {templateUrl: views.search, controller: 'SearchController'})

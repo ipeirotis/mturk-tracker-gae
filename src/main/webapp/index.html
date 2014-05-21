@@ -26,12 +26,13 @@
 	<div class="container content">
 		<div class="row">
 			<div class="col-md-2">
-				<ul class="nav nav-pills nav-stacked">
-					<li class="active"><a ng-href="#/general">General</a></li>
-					<li><a ng-href="#/arrivals">Arrivals</a></li>
-					<li><a ng-href="#/requesters">Top requesters</a></li>
-					<li><a ng-href="#/search">Search</a></li>
-					<li><a ng-href="#/api">API</a></li>
+				<ul class="nav nav-pills nav-stacked" navpills>
+					<li data-match-route="/general"><a ng-href="#/general">General</a></li>
+					<li data-match-route="/arrivals"><a ng-href="#/arrivals">Arrivals</a></li>
+					<li data-match-route="/completions"><a ng-href="#/completions">Completions</a></li>
+					<li data-match-route="/requesters"><a ng-href="#/requesters">Top requesters</a></li>
+					<li data-match-route="/search"><a ng-href="#/search">Search</a></li>
+					<li data-match-route="/api"><a ng-href="#/api">API</a></li>
 				</ul>
 			</div>
 			<div class="col-md-10" ng-view></div>
