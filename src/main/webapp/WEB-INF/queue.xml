@@ -7,8 +7,8 @@
   </queue>
   <queue>
     <name>trackHITs</name>
-    <rate>5/s</rate>
-    <bucket-size>10</bucket-size>
-    <max-concurrent-requests>10</max-concurrent-requests>
+    <rate>20/s</rate>
+    <bucket-size>40</bucket-size>
+    <max-concurrent-requests>20</max-concurrent-requests>
   </queue>
 </queue-entries>

@@ -60,6 +60,10 @@ public class TrackHITs extends HttpServlet {
       ofy().save().entity(group);
 
       Element hitElement = doc.select("a:matchesOwn(HITs Available:+)").first();
+      if(hitElement == null){//usually when we get following message: "You have exceeded the maximum allowed page request rate for this website."
+          return;
+      }
+
       String hits = hitElement.parent().nextElementSibling().text();
       Integer iHits = Integer.parseInt(hits);
 

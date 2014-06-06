@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-
   <cron>
     <url>/scheduleLatestTasksPulling?numOfPages=20</url>
     <description>PullLatestTasks</description>
     <schedule>every 1 minutes</schedule>
   </cron>
   <cron>
+    <url>/scheduleTopRequestersComputation</url>
+    <description>Compute top requesters</description>
+    <schedule>every day 1:00</schedule>
+  </cron>
+  <cron>
     <url>/scheduleHITsTracking</url>
     <description>Track active HIT groups</description>
     <schedule>every 5 minutes</schedule>
   </cron>
-    <cron>
+  <cron>
     <url>/scheduleStatComputation?duration=60&amp;date=0</url>
     <description>Almost real-time updating of the displayed statistics</description>
     <schedule>every 1 hours</schedule>
@@ -30,5 +34,5 @@
     <url>/scheduleStatComputation?duration=60&amp;date=3</url>
     <description>scheduleStatComputation</description>
     <schedule>every day 3:10</schedule>
-  </cron>  
+  </cron>
 </cronentries>

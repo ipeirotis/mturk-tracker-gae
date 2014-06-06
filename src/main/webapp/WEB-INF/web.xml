@@ -4,7 +4,34 @@
         xmlns="http://java.sun.com/xml/ns/javaee"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-        
+	
+	<servlet>
+		<servlet-name>ScheduleTopRequestersComputation</servlet-name>
+		<servlet-class>com.tracker.servlet.schedule.ScheduleTopRequestersComputation</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ScheduleTopRequestersComputation</servlet-name>
+		<url-pattern>/scheduleTopRequestersComputation</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>ComputeTopRequesters</servlet-name>
+		<servlet-class>com.tracker.servlet.task.ComputeTopRequesters</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ComputeTopRequesters</servlet-name>
+		<url-pattern>/computeTopRequesters</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ScheduleStatComputation</servlet-name>
+		<servlet-class>com.tracker.servlet.schedule.ScheduleStatComputation</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ScheduleStatComputation</servlet-name>
+		<url-pattern>/scheduleStatComputation</url-pattern>
+	</servlet-mapping>
+	
     <servlet>
 		<servlet-name>ComputeArrivalCompletions</servlet-name>
 		<servlet-class>com.tracker.servlet.task.ComputeArrivalCompletions</servlet-class>
@@ -50,15 +77,6 @@
 		<url-pattern>/trackHits</url-pattern>
 	</servlet-mapping>
 	
-	<servlet>
-		<servlet-name>ScheduleStatComputation</servlet-name>
-		<servlet-class>com.tracker.servlet.schedule.ScheduleStatComputation</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>ScheduleStatComputation</servlet-name>
-		<url-pattern>/scheduleStatComputation</url-pattern>
-	</servlet-mapping>
-	
 	<filter>
 		<filter-name>ObjectifyFilter</filter-name>
 		<filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
@@ -83,7 +101,8 @@
 	        com.tracker.endpoints.ArrivalCompletionsEndpoint,
 	        com.tracker.endpoints.HitGroupEndpoint,
 	        com.tracker.endpoints.HitInstanceEndpoint,
-	        com.tracker.endpoints.MarketStatisticsEndpoint
+	        com.tracker.endpoints.MarketStatisticsEndpoint,
+	        com.tracker.endpoints.TopRequestersEndpoint
 	      </param-value>
 	    </init-param>
 	</servlet>
@@ -92,5 +111,15 @@
 	    <servlet-name>SystemServiceServlet</servlet-name>
 	    <url-pattern>/_ah/spi/*</url-pattern>
 	</servlet-mapping>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>admin</web-resource-name>
+			<url-pattern>/admin/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>admin</role-name>
+		</auth-constraint>
+	</security-constraint>
 	
 </web-app>

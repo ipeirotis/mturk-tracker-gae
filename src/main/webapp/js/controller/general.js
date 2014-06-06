@@ -1,5 +1,5 @@
-angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'chartDataService', 
-    function ($scope, $filter, chartDataService) {
+angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'dataService', 
+    function ($scope, $filter, dataService) {
 
     $scope.from = new Date().setDate(new Date().getDate() - 7);
     $scope.to = new Date();
@@ -59,7 +59,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'c
     $scope.activePill = 'marketStatisticsChartPill';
     
     $scope.load = function(){
-        chartDataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
+        dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
             angular.forEach(response.items, function(item){
                 $scope.rows.marketStatisticsChart.push({c:[{v: new Date(item.from)}, {v: item.hitsAvailableUI}, {v: item.hitGroupsAvailableUI}]});
                 $scope.rows.groupsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsArrived)}]});

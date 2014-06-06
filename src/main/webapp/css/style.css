@@ -36,3 +36,11 @@
 	top: 100px;
 	z-index: 100001;
 }
+
+.search-bar {
+	margin-bottom: 20px;
+}
+
+.table {
+	font-size: 12px;
+}

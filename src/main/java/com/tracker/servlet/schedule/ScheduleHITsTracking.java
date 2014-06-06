@@ -3,7 +3,6 @@ package com.tracker.servlet.schedule;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;

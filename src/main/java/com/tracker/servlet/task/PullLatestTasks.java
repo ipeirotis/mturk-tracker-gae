@@ -11,9 +11,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -23,11 +25,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.google.appengine.api.search.Field;
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.SearchServiceFactory;
+import com.tracker.entity.HITcontent;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
 import com.tracker.entity.MarketStatistics;
@@ -42,6 +50,19 @@ public class PullLatestTasks extends HttpServlet {
       + "&searchSpec=HITGroupSearch%23T%238%2310%23-1%23T%23%21%23%21LastUpdatedTime%211%21%23%21"
       + "&selectedSearchType=hitgroups" 
       + "&searchWords=";
+  
+  private static final Set<String> ENGLISH_STOP_WORDS_SET;
+  
+  static {
+      final List<String> stopWords = Arrays.asList(
+        "a", "an", "and", "are", "as", "at", "be", "but", "by",
+        "for", "if", "in", "into", "is", "it",
+        "no", "not", "of", "on", "or", "such",
+        "that", "the", "their", "then", "there", "these",
+        "they", "this", "to", "was", "will", "with"
+      );
+      ENGLISH_STOP_WORDS_SET = new HashSet<String>(stopWords);
+  }
   
   private static final Set<String> sortTypes = new HashSet<String>(Arrays.asList("LastUpdatedTime", "NumHITs", 
           "Reward", "LatestExpiration", "Title", "AssignmentDurationInSeconds"));
@@ -87,6 +108,7 @@ public class PullLatestTasks extends HttpServlet {
     Document doc = Jsoup.connect(url).get();
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
+    List<HITcontent> hitContents = new ArrayList<HITcontent>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
@@ -164,13 +186,17 @@ public class PullLatestTasks extends HttpServlet {
             //qualifications
             List<String> qualifications = getQualifications(qualificationElement);
 
-            String hitContent = loadHitContent(groupId);
+            String content = loadHitContent(groupId);
 
             //create new HITgroup 
             HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
                     description, keywords, expirationDate, rewardValue, 
-                    parseTime(timeAlloted), qualifications, hitContent, now, now);
+                    parseTime(timeAlloted), qualifications, now, now);
             hitGroups.add(hitGroup);
+            
+            //create new HITcontent
+            HITcontent hitContent = new HITcontent(groupId, content);
+            addToIndex(hitGroup, hitContent);
 
             // Create a new (the first) HITinstance
             HITinstance hitinstance = new HITinstance(groupId, now, hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
@@ -182,8 +208,45 @@ public class PullLatestTasks extends HttpServlet {
     
     if(hitGroups.size() != 0 && hitInstances.size() != 0){
         ofy().save().entities(hitGroups);
+        ofy().save().entities(hitContents);
         ofy().save().entities(hitInstances);
     }
+  }
+  
+  private void addToIndex(HITgroup hitGroup, HITcontent hitContent){
+      Index index = SearchServiceFactory.getSearchService()
+              .getIndex(IndexSpec.newBuilder().setName("hit_group_index"));
+
+      com.google.appengine.api.search.Document doc = com.google.appengine.api.search.Document.newBuilder()
+                  .addField(Field.newBuilder().setName("requesterName").setText(hitGroup.getRequesterName()))
+                  .addField(Field.newBuilder().setName("title").setText(hitGroup.getTitle()))
+                  .addField(Field.newBuilder().setName("description").setText(hitGroup.getDescription()))
+                  .addField(Field.newBuilder().setName("hitContent").setText(optimizeContentForIndex(hitContent.getContent())))
+                  .addField(Field.newBuilder().setName("keywords").setText(StringUtils.join(hitGroup.getKeywords(), ", ")))
+                  .addField(Field.newBuilder().setName("qualifications").setText(StringUtils.join(hitGroup.getQualificationsRequired(), ", ")))
+                  .setId(hitGroup.getGroupId())
+                  .build();
+      index.put(doc);
+  }
+  
+  /*remove html tags, styles, scripts, stop words and duplicate words*/
+  private String optimizeContentForIndex(String content) {
+      if(StringUtils.isEmpty(content)) {
+          return null;
+      }
+      
+      String text = Jsoup.parse(content).text();
+      StringTokenizer st = new StringTokenizer(text);
+      Set<String> set = new LinkedHashSet<String>();
+      
+      while (st.hasMoreTokens()) {
+          String token = st.nextToken();
+          if(!ENGLISH_STOP_WORDS_SET.contains(token)){
+              set.add(token);
+          }
+      }
+
+      return StringUtils.join(set, " ");
   }
   
   private Elements getHitRows(Document doc){

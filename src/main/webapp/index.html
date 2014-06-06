@@ -7,6 +7,7 @@
     
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/themes/flick/jquery-ui.css" />
+    <link rel="stylesheet" href="/css/ng-table.css" />
     <link rel="stylesheet" href="/css/style.css" />
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
@@ -19,6 +20,7 @@
 	<script src="/lib/ui-bootstrap-tpls-0.11.0.js" type="text/javascript"></script>
  
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.js" type="text/javascript"></script>
+    <script type='text/javascript' src='lib/ng-table.min.js'></script>
 	<script type='text/javascript' src='js/script.js'></script>
   </head>
 
@@ -30,9 +32,9 @@
 					<li data-match-route="/general"><a ng-href="#/general">General</a></li>
 					<li data-match-route="/arrivals"><a ng-href="#/arrivals">Arrivals</a></li>
 					<li data-match-route="/completions"><a ng-href="#/completions">Completions</a></li>
-					<li data-match-route="/requesters"><a ng-href="#/requesters">Top requesters</a></li>
+					<li data-match-route="/toprequesters"><a ng-href="#/toprequesters">Top requesters</a></li>
 					<li data-match-route="/search"><a ng-href="#/search">Search</a></li>
-					<li data-match-route="/api"><a ng-href="#/api">API</a></li>
+					<li data-match-route="/api"><a href="https://apis-explorer.appspot.com/apis-explorer/?base=https://mturk-tracker.appspot.com/_ah/api#p/mturk/v1/">API</a></li>
 				</ul>
 			</div>
 			<div class="col-md-10" ng-view></div>

@@ -40,26 +40,26 @@ public class ArrivalCompletions {
 	private ArrivalCompletions() {
 	}
 
-  public Double getHitGroupsAvailableUI() {
-    return hitGroupsAvailableUI;
-  }
+	public Double getHitGroupsAvailableUI() {
+	    return hitGroupsAvailableUI;
+	}
 
-  public void setHitGroupsAvailableUI(Double hitGroupsAvailableUI) {
-    this.hitGroupsAvailableUI = hitGroupsAvailableUI;
-  }
-
-
-  public Double getHitsAvailableUI() {
-    return hitsAvailableUI;
-  }
-
-  public void setHitsAvailableUI(Double hitsAvailableUI) {
-    this.hitsAvailableUI = hitsAvailableUI;
-  }
+	public void setHitGroupsAvailableUI(Double hitGroupsAvailableUI) {
+	    this.hitGroupsAvailableUI = hitGroupsAvailableUI;
+	}
 
 
-  public Long getId() {
-		return id;
+	public Double getHitsAvailableUI() {
+	    return hitsAvailableUI;
+	}
+
+	public void setHitsAvailableUI(Double hitsAvailableUI) {
+	    this.hitsAvailableUI = hitsAvailableUI;
+	}
+
+
+	public Long getId() {
+	    return id;
 	}
 
 	public void setId(Long id) {

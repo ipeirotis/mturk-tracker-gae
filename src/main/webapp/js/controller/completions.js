@@ -1,5 +1,5 @@
-angular.module('mturk').controller('CompletionsController', ['$scope', '$filter', 'chartDataService', 
-    function ($scope, $filter, chartDataService) {
+angular.module('mturk').controller('CompletionsController', ['$scope', '$filter', 'dataService', 
+    function ($scope, $filter, dataService) {
 
     $scope.from = new Date().setDate(new Date().getDate() - 7);
     $scope.to = new Date();
@@ -46,11 +46,11 @@ angular.module('mturk').controller('CompletionsController', ['$scope', '$filter'
     $scope.activePill = 'hitsChartPill';
     
     $scope.load = function(){
-        chartDataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
+        dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
             angular.forEach(response.items, function(item){
                 $scope.rows.hitsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsCompleted)}]});
                 $scope.rows.hitGroupsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsCompleted)}]});
-                $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)}]});
+                $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)/100}]});
             });
             
             $scope.draw('hitsChart');

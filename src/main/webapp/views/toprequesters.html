@@ -1,26 +1,15 @@
 <div class="row">
-	<div class="search-bar">
-		<form class="form-inline" role="form">
-			<div class="form-group">
-				<label for="searchValue">Search</label>
-				<input type="text" class="form-control input-sm" id="searchValue" ng-model="searchValue">
-			</div>
-			<div class="form-group">
-				<label for="selectedSearchFields">In fields</label>
-				<select ng-model="selectedSearchFields" class="form-control input-sm" id="selectedSearchFields"
-					ng-options="searchField.id as searchField.value for searchField in searchFields">
-					<option value=""></option>
-				</select>
-			</div>
-			<button type="button" class="btn btn-default btn-sm" ng-click="search()">Search</button>
-		</form>
-	</div>
-	
+	<!-- 
+	<ul class="nav nav-pills" ng-model="activePill" pills>
+	  <li class="active"><a href="" id="hitsAvailablePill" ng-click="draw('hitsChart')">HITs available</a></li>
+	  <li><a href="" id="hitsPostedPill" ng-click="draw('hitGroupsChart')">HITs posted</a></li>
+	</ul>
+	 -->
 	<table ng-table="tableParams" template-pagination="custom/pager" class="table">
-	    <tr ng-repeat="hitGroup in $data">
-	    	<td data-title="'Requester name'">{{hitGroup.requesterName}}</td>
-	        <td data-title="'Title'">{{hitGroup.title}}</td>
-	        <td data-title="'Description'">{{hitGroup.description}}</td>
+	    <tr ng-repeat="requester in $data">
+	    	<td data-title="'Requester name'" sortable="'requesterName'">{{requester.requesterName}}</td>
+	        <td data-title="'hits'" sortable="'hits'">{{requester.hits}}</td>
+	        <td data-title="'reward'" sortable="'reward'">{{requester.reward}}</td>
 	    </tr>
     </table>
     
@@ -28,7 +17,7 @@
         <ul class="pager ng-cloak">
           <li ng-repeat="page in pages"
                 ng-class="{'disabled': !page.active, 'previous': page.type == 'prev', 'next': page.type == 'next'}"
-                ng-show="page.type == 'prev' || page.type == 'next'" ng-switch="page.type">
+                ng-show="page.type == 'prev' || page.type == 'next'" >
             <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo; Previous</a>
             <a ng-switch-when="next" ng-click="params.page(page.number)" href="">Next &raquo;</a>
           </li>

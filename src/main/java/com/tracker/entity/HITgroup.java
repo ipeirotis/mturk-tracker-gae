@@ -25,7 +25,6 @@ public class HITgroup {
   private Integer reward; //Price in cents
   private Integer timeAlloted; //Time in seconds
   private List<String> qualificationsRequired;
-  private String hitContent;
   @Index
   private Date firstSeen;
   @Index
@@ -36,7 +35,7 @@ public class HITgroup {
   public HITgroup(String groupId, String requesterId, String requesterName, String title,
       String description, List<String> keywords, Date expirationDate,
       Integer reward, Integer timeAlloted, List<String> qualificationsRequired, 
-      String hitContent, Date firstSeen, Date lastSeen) {
+      Date firstSeen, Date lastSeen) {
     this.groupId = groupId;
     this.requesterId = requesterId;
     this.requesterName = requesterName;
@@ -47,7 +46,6 @@ public class HITgroup {
     this.reward = reward;
     this.timeAlloted = timeAlloted;
     this.qualificationsRequired = qualificationsRequired;
-    this.hitContent = hitContent;
     this.firstSeen = firstSeen;
     this.lastSeen = lastSeen;
   }
@@ -127,15 +125,7 @@ public class HITgroup {
   public void setQualificationsRequired(List<String> qualificationsRequired) {
     this.qualificationsRequired = qualificationsRequired;
   }
-
-  public String getHitContent() {
-    return hitContent;
-  }
-
-  public void setHitContent(String hitContent) {
-    this.hitContent = hitContent;
-  }
-
+  
   public Date getFirstSeen() {
     return firstSeen;
   }
