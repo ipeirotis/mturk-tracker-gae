@@ -4,7 +4,9 @@ import static com.tracker.ofy.OfyService.ofy;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.inject.Named;
@@ -15,6 +17,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.Nullable;
+import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.Query;
@@ -45,7 +48,7 @@ public class HitGroupEndpoint {
 	}
 
 	@ApiMethod(name = "hitgroup.search", path = "hitgroup/search", httpMethod = HttpMethod.GET)
-	public Collection<HITgroup> search(
+	public List<Map<String, String>> search(
 	        @Nullable @Named("requesterName") String requesterName,
 	        @Nullable @Named("title") String title,
 	        @Nullable @Named("description") String description,
@@ -81,12 +84,16 @@ public class HitGroupEndpoint {
 	    Query query = Query.newBuilder().setOptions(options).build(queryString);
 	    Collection<ScoredDocument> docs = index.search(query).getResults();
 	    
-	    List<String> ids = new ArrayList<String>();
+	    List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 	    
 	    for(ScoredDocument doc : docs) {
-	        ids.add(doc.getId());
+	        Map<String, String> fields = new HashMap<String, String>();
+	        for (Field field : doc.getFields()){
+	            fields.put(field.getName(), field.getText());
+	        }
+	        result.add(fields);
 	    }
 
-	    return ofy().load().type(HITgroup.class).ids(ids).values();
+	    return result;
 	}
 }

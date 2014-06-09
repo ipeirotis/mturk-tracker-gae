@@ -9,6 +9,6 @@
     <name>trackHITs</name>
     <rate>20/s</rate>
     <bucket-size>40</bucket-size>
-    <max-concurrent-requests>20</max-concurrent-requests>
+    <max-concurrent-requests>15</max-concurrent-requests>
   </queue>
 </queue-entries>
