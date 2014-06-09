@@ -3,10 +3,10 @@ package com.tracker.servlet.schedule;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -21,7 +21,7 @@ import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.googlecode.objectify.cmd.Query;
-import com.tracker.entity.HITgroup;
+import com.tracker.entity.HITrequester;
 
 @SuppressWarnings("serial")
 public class ScheduleTopRequestersComputation extends HttpServlet {
@@ -40,26 +40,27 @@ public class ScheduleTopRequestersComputation extends HttpServlet {
         cal.set(Calendar.MILLISECOND, 0);
         cal.add(Calendar.DATE, -30); //last 30 days
 
-        Set<String> requesterIds = getRequesterIds(cal);
-        for (String id : requesterIds) {
-            schedule(id, cal.getTimeInMillis());
+        List<HITrequester> requesters = getRequesters(cal);
+        for (HITrequester requester : requesters) {
+            schedule(requester.getRequesterId(), requester.getRequesterName(), cal.getTimeInMillis());
         }
     }
 
-    private void schedule(String requesterId, long from) {
+    private void schedule(String requesterId, String requesterName, long from) {
         Queue queue = QueueFactory.getDefaultQueue();
         queue.add(Builder
             .withUrl("/computeTopRequesters")
             .param("requesterId", requesterId)
+            .param("requesterName", requesterName)
             .param("from", String.valueOf(from))
             .etaMillis(System.currentTimeMillis())
             .retryOptions(RetryOptions.Builder.withTaskRetryLimit(0))
             .method(TaskOptions.Method.GET));
     }
     
-    public Set<String> getRequesterIds(Calendar cal) {
-        Set<String> result = new HashSet<String>();
-        Query<HITgroup> q = ofy().load().type(HITgroup.class).filter("expirationDate >", cal.getTime());
+    public List<HITrequester> getRequesters(Calendar cal) {
+        List<HITrequester> result = new ArrayList<HITrequester>();
+        Query<HITrequester> q = ofy().load().type(HITrequester.class).filter("lastActivity >", cal.getTime());
         Cursor cursor = null;
 
         while (true) {
@@ -68,14 +69,12 @@ public class ScheduleTopRequestersComputation extends HttpServlet {
             }
 
             boolean continu = false;
-            QueryResultIterator<HITgroup> iterator = q.iterator();
+            QueryResultIterator<HITrequester> iterator = q.iterator();
             cursor = iterator.getCursor();
 
             while (iterator.hasNext()) {
-                HITgroup group = iterator.next();
-                if(group.getRequesterId() != null) {
-                    result.add(group.getRequesterId());
-                }
+                HITrequester requester = iterator.next();
+                result.add(requester);
                 continu = true;
             }
 

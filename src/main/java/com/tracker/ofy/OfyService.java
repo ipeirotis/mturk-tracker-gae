@@ -7,6 +7,7 @@ import com.tracker.entity.ArrivalCompletions;
 import com.tracker.entity.HITcontent;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
+import com.tracker.entity.HITrequester;
 import com.tracker.entity.MarketStatistics;
 import com.tracker.entity.TopRequester;
 
@@ -14,6 +15,7 @@ public class OfyService {
 	static {
         register(HITgroup.class);
         register(HITcontent.class);
+        register(HITrequester.class);
         register(HITinstance.class);
         register(MarketStatistics.class);
         register(ArrivalCompletions.class);

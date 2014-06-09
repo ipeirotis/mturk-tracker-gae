@@ -29,6 +29,7 @@ public class ComputeTopRequesters extends HttpServlet {
       throws IOException {
       
       String requesterId = req.getParameter("requesterId");
+      String requesterName = req.getParameter("requesterName");
       String fromParam = req.getParameter("from");
       Date from = new Date(Long.parseLong(fromParam));
       
@@ -37,10 +38,8 @@ public class ComputeTopRequesters extends HttpServlet {
       
       Integer hitsArrived = 0;
       Integer rewardsArrived = 0;
-      String requesterName = null;
       
       for(HITgroup group : groups) {
-          requesterName = group.getRequesterName();
           List<HITinstance> instances = getHitInstances(group.getGroupId());
           for(HITinstance inst : instances) {
               if(inst.getHitsDiff() != null) {

@@ -38,6 +38,7 @@ import com.google.appengine.api.search.SearchServiceFactory;
 import com.tracker.entity.HITcontent;
 import com.tracker.entity.HITgroup;
 import com.tracker.entity.HITinstance;
+import com.tracker.entity.HITrequester;
 import com.tracker.entity.MarketStatistics;
 import com.tracker.util.SafeCurrencyFormat;
 import com.tracker.util.SafeDateFormat;
@@ -109,6 +110,7 @@ public class PullLatestTasks extends HttpServlet {
   	Date now = new Date();
     List<HITgroup> hitGroups = new ArrayList<HITgroup>();
     List<HITcontent> hitContents = new ArrayList<HITcontent>();
+    List<HITrequester> hitRequesters = new ArrayList<HITrequester>();
     List<HITinstance> hitInstances = new ArrayList<HITinstance>();
     
     //market statistics
@@ -188,15 +190,23 @@ public class PullLatestTasks extends HttpServlet {
 
             String content = loadHitContent(groupId);
 
-            //create new HITgroup 
-            HITgroup hitGroup = new HITgroup(groupId, requesterId, requesterName, title,
+            //create new HITgroup
+            HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
                     description, keywords, expirationDate, rewardValue, 
                     parseTime(timeAlloted), qualifications, now, now);
             hitGroups.add(hitGroup);
-            
+
+            //create new HITrequester if HIT group is not exists,
+            //requester will be updated if he already exists
+            if(existingGroup == null){
+                HITrequester requester = new HITrequester(requesterId, requesterName, new Date());
+                hitRequesters.add(requester);
+            }
+
             //create new HITcontent
             HITcontent hitContent = new HITcontent(groupId, content);
-            addToIndex(hitGroup, hitContent);
+            addToIndex(hitGroup, requesterName, content);
+            hitContents.add(hitContent);
 
             // Create a new (the first) HITinstance
             HITinstance hitinstance = new HITinstance(groupId, now, hitsAvailable, hitsAvailable, rewardAvailable, rewardAvailable);
@@ -209,19 +219,20 @@ public class PullLatestTasks extends HttpServlet {
     if(hitGroups.size() != 0 && hitInstances.size() != 0){
         ofy().save().entities(hitGroups);
         ofy().save().entities(hitContents);
+        ofy().save().entities(hitRequesters);
         ofy().save().entities(hitInstances);
     }
   }
   
-  private void addToIndex(HITgroup hitGroup, HITcontent hitContent){
+  private void addToIndex(HITgroup hitGroup, String requesterName, String content){
       Index index = SearchServiceFactory.getSearchService()
               .getIndex(IndexSpec.newBuilder().setName("hit_group_index"));
 
       com.google.appengine.api.search.Document doc = com.google.appengine.api.search.Document.newBuilder()
-                  .addField(Field.newBuilder().setName("requesterName").setText(hitGroup.getRequesterName()))
+                  .addField(Field.newBuilder().setName("requesterName").setText(requesterName))
                   .addField(Field.newBuilder().setName("title").setText(hitGroup.getTitle()))
                   .addField(Field.newBuilder().setName("description").setText(hitGroup.getDescription()))
-                  .addField(Field.newBuilder().setName("hitContent").setText(optimizeContentForIndex(hitContent.getContent())))
+                  .addField(Field.newBuilder().setName("hitContent").setText(optimizeContentForIndex(content)))
                   .addField(Field.newBuilder().setName("keywords").setText(StringUtils.join(hitGroup.getKeywords(), ", ")))
                   .addField(Field.newBuilder().setName("qualifications").setText(StringUtils.join(hitGroup.getQualificationsRequired(), ", ")))
                   .setId(hitGroup.getGroupId())
