@@ -13,7 +13,7 @@
 }
 
 .content {
-	padding-top: 50px;
+	padding-top: 10px;
 }
 
 .notification {
@@ -43,4 +43,28 @@
 
 .table {
 	font-size: 12px;
+}
+
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+body {
+	/* Margin bottom by footer height */
+	margin-bottom: 60px;
+}
+
+#footer {
+	font-size: 12px;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 60px;
+	background-color: #dfeaf0;
+	border-top: 1px solid #b2d2e4;
+	display: block;
+	margin: 20px 0 0 0;
+	color: #075b8d;
+	padding: 10px 10px 0 70px;
 }

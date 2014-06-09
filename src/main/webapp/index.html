@@ -4,6 +4,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>Mechanical Turk Tracker v2.0</title>
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
     
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/themes/flick/jquery-ui.css" />
@@ -27,6 +28,9 @@
   <body>
 	<div class="container content">
 		<div class="row">
+			<img src="/img/mturktracker_logo.png" alt="">
+		</div>
+		<div class="row">
 			<div class="col-md-2">
 				<ul class="nav nav-pills nav-stacked" navpills>
 					<li data-match-route="/general"><a ng-href="#/general">General</a></li>
@@ -40,5 +44,11 @@
 			<div class="col-md-10" ng-view></div>
 		</div>
 	</div>
+	<footer id="footer">
+            <p>For bugs reports or feature requests, please contact
+            <a href="http://www.stern.nyu.edu/~panos">Panos Ipeirotis</a>
+            <br> If you want to cite this website, please cite the paper
+            <a href="http://portal.acm.org/citation.cfm?id=1869094">Analyzing the Amazon Mechanical Turk Marketplace</a>, P. Ipeirotis, ACM XRDS, Vol 17, Issue 2, Winter 2010, pp 16-21.</p>
+    </footer>
 </body>
 </html>
