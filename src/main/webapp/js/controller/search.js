@@ -31,6 +31,7 @@ angular.module('mturk').controller('SearchController',
      }, {
          total: $scope.hitGroups.length,
          getData: function($defer, params) {
+             params.total($scope.hitGroups.length);
              $defer.resolve($scope.hitGroups.slice((params.page() - 1) * params.count(), params.page() * params.count()));
          }
      });

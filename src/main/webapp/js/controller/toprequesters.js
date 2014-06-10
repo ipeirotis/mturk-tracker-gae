@@ -24,8 +24,8 @@ angular.module('mturk').controller('TopRequestersController',
               var orderedData = params.sorting() ?
                       $filter('orderBy')($scope.topRequesters, params.orderBy()) :
                           $scope.topRequesters;
+              params.total(orderedData.length)
               $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
-              //$defer.resolve($scope.topRequesters.slice((params.page() - 1) * params.count(), params.page() * params.count()));
           }
       });
       
