@@ -5,7 +5,7 @@
 	  <li><a href="" id="hitsPostedPill" ng-click="draw('hitGroupsChart')">HITs posted</a></li>
 	</ul>
 	 -->
-	<table ng-table="tableParams" template-pagination="custom/pager" class="table">
+	<table ng-table="tableParams" template-pagination="custom/pager" class="table table-hover">
 	    <tr ng-repeat="requester in $data">
 	    	<td data-title="'Requester name'" sortable="'requesterName'">{{requester.requesterName}}</td>
 	        <td data-title="'hits'" sortable="'hits'">{{requester.hits}}</td>
@@ -27,7 +27,7 @@
                 <button type="button" ng-class="{'active':params.count() == 25}" ng-click="params.count(25)" class="btn btn-default btn-sm">25</button>
                 <button type="button" ng-class="{'active':params.count() == 50}" ng-click="params.count(50)" class="btn btn-default btn-sm">50</button>
                 <button type="button" ng-class="{'active':params.count() == 100}" ng-click="params.count(100)" class="btn btn-default btn-sm">100</button>
-				<button type="button" class="btn btn-default btn-sm" disabled="disabled">Page {{params.page()}} of {{params.total()/params.count()}}</button>
+				<button type="button" class="btn btn-default btn-sm" disabled="disabled">Page {{params.page()}} of {{params.total()/params.count() | ceil}}</button>
 			</div>
             </li>
         </ul>
