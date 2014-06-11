@@ -1,5 +1,5 @@
 angular.module('mturk').controller('SearchController',
-  ['$scope', 'dataService', 'ngTableParams', function ($scope, dataService, ngTableParams) {
+  ['$scope', 'dataService', 'ngTableParams', '$filter', function ($scope, dataService, ngTableParams, $filter) {
 
      $scope.hitGroups = [];
       
@@ -27,12 +27,17 @@ angular.module('mturk').controller('SearchController',
      
      $scope.tableParams = new ngTableParams({
          page: 1,
-         count: 10
+         count: 10,
+         sorting: {
+             requesterName: 'asc'
+         }
      }, {
          total: $scope.hitGroups.length,
          getData: function($defer, params) {
-             params.total($scope.hitGroups.length);
-             $defer.resolve($scope.hitGroups.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+             var orderedData = params.sorting() ?
+                     $filter('orderBy')($scope.hitGroups, params.orderBy()) : $scope.hitGroups;
+             params.total(orderedData.length);
+             $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
          }
      });
 

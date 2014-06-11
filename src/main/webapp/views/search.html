@@ -18,9 +18,9 @@
 	
 	<table ng-table="tableParams" template-pagination="custom/pager" class="table table-hover">
 	    <tr ng-repeat="hitGroup in $data">
-	    	<td data-title="'Requester name'">{{hitGroup.requesterName}}</td>
-	        <td data-title="'Title'">{{hitGroup.title}}</td>
-	        <td data-title="'Description'">{{hitGroup.description}}</td>
+	        <td data-title="'Requester name'" sortable="'requesterName'"class="col-md-3">{{hitGroup.requesterName}}</td>
+	        <td data-title="'Title'" sortable="'title'"class="col-md-3">{{hitGroup.title}}</td>
+	        <td data-title="'Description'"class="col-md-6">{{hitGroup.description}}</td>
 	    </tr>
     </table>
     
