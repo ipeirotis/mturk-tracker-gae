@@ -7,9 +7,9 @@
 	 -->
 	<table ng-table="tableParams" template-pagination="custom/pager" class="table table-hover">
 	    <tr ng-repeat="requester in $data">
-	    	<td data-title="'Requester name'" sortable="'requesterName'">{{requester.requesterName}}</td>
-	        <td data-title="'hits'" sortable="'hits'">{{requester.hits}}</td>
-	        <td data-title="'reward'" sortable="'reward'">{{requester.reward}}</td>
+	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8">{{requester.requesterName}}</td>
+	        <td data-title="'hits'" sortable="'hits'" class="col-md-2">{{requester.hits}}</td>
+	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{requester.reward}}</td>
 	    </tr>
     </table>
     

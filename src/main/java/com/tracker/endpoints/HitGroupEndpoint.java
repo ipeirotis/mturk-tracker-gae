@@ -80,7 +80,8 @@ public class HitGroupEndpoint {
 	    
 	    IndexSpec indexSpec = IndexSpec.newBuilder().setName("hit_group_index").build();
 	    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-	    QueryOptions options = QueryOptions.newBuilder().setLimit(100).build();
+	    QueryOptions options = QueryOptions.newBuilder()
+	            .setFieldsToReturn("requesterName", "title", "description").setLimit(1000).build();
 	    Query query = Query.newBuilder().setOptions(options).build(queryString);
 	    Collection<ScoredDocument> docs = index.search(query).getResults();
 	    

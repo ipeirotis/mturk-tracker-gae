@@ -55,6 +55,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
     });
     
     $scope.charts = ['marketStatisticsChart', 'groupsChart', 'hitsChart', 'rewardsChart'];
+    $scope.drawnCharts = [];
     $scope.visibleChart = 'marketStatisticsChart';
     $scope.activePill = 'marketStatisticsChartPill';
     
@@ -66,7 +67,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
                 $scope.rows.hitsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsArrived)}]});
                 $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsArrived) / 100}]});
             });
-            
+            $scope.drawnCharts = [];
             $scope.draw('marketStatisticsChart');
         }, function(error){
             //TODO
@@ -77,18 +78,30 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
         $scope.visibleChart = chart;
         $scope.activePill = chart + 'Pill';
         
+        var drawn = false;
+        var i = $.inArray(chart, $scope.drawnCharts);
+        if(i < 0){
+            $scope.drawnCharts.push(chart);
+        }else{
+            drawn = true;
+        }
+
         angular.forEach($scope.charts, function(chart){
             if($scope.visibleChart != chart){
                 $('#'+chart).css({display:'none'});
             }else{
-                $('#'+chart).css({visibility:'hidden'});
+                if(drawn == false){
+                    $('#'+chart).css({visibility:'hidden'});
+                }
                 $('#'+chart).css({display:'block'});
             }
         });
         
-        var ch = $scope[chart];
-        ch.data.rows = $scope.rows[chart];
-        ch.ts = new Date();
+        if(drawn == false){
+            var ch = $scope[chart];
+            ch.data.rows = $scope.rows[chart];
+            ch.ts = new Date();
+        }
     };
 
     $scope.openFromPicker = function($event) {

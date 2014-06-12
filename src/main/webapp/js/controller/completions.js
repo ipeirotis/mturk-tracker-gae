@@ -42,6 +42,7 @@ angular.module('mturk').controller('CompletionsController', ['$scope', '$filter'
     });
     
     $scope.charts = ['hitsChart', 'hitGroupsChart', 'rewardsChart'];
+    $scope.drawnCharts = [];
     $scope.visibleChart = 'hitsChart';
     $scope.activePill = 'hitsChartPill';
     
@@ -53,6 +54,7 @@ angular.module('mturk').controller('CompletionsController', ['$scope', '$filter'
                 $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)/100}]});
             });
             
+            $scope.drawnCharts = [];
             $scope.draw('hitsChart');
         }, function(error){
             //TODO
@@ -63,18 +65,30 @@ angular.module('mturk').controller('CompletionsController', ['$scope', '$filter'
         $scope.visibleChart = chart;
         $scope.activePill = chart + 'Pill';
         
+        var drawn = false;
+        var i = $.inArray(chart, $scope.drawnCharts);
+        if(i < 0){
+            $scope.drawnCharts.push(chart);
+        }else{
+            drawn = true;
+        }
+        
         angular.forEach($scope.charts, function(chart){
             if($scope.visibleChart != chart){
                 $('#'+chart).css({display:'none'});
             }else{
-                $('#'+chart).css({visibility:'hidden'});
+                if(drawn == false){
+                    $('#'+chart).css({visibility:'hidden'});
+                }
                 $('#'+chart).css({display:'block'});
             }
         });
         
-        var ch = $scope[chart];
-        ch.data.rows = $scope.rows[chart];
-        ch.ts = new Date();
+        if(drawn == false){
+            var ch = $scope[chart];
+            ch.data.rows = $scope.rows[chart];
+            ch.ts = new Date();
+        }
     };
 
     $scope.openFromPicker = function($event) {
