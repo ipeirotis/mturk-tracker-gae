@@ -3,6 +3,7 @@ angular.module('mturk').constant('views', {
     arrivals: 'views/arrivals.html',
     completions: 'views/completions.html',
     general: 'views/general.html',
-    toprequesters: 'views/toprequesters.html',
+    requesterDetails: 'views/requesterDetails.html',
+    topRequesters: 'views/toprequesters.html',
     search: 'views/search.html'
 });

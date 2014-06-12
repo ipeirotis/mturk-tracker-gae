@@ -9,6 +9,10 @@ angular.module('mturk').factory('dataService',	['$http', function($http) {
 	        $http.get(this.getApiUrl() + '/toprequester/list')
 	        .success(success).error(error);
 	    },
+	    hitgroups: function(requesterId, success, error) {
+            $http.get(this.getApiUrl() + '/hitgroup/listByRequesterId?requesterId=' + requesterId)
+            .success(success).error(error);
+        },
 	    search: function(params, success, error) {
 	        $http.get(this.getApiUrl() + '/hitgroup/search', {params: params}).success(success).error(error);
 	    },

@@ -1,15 +1,9 @@
 <div class="row">
-	<!-- 
-	<ul class="nav nav-pills" ng-model="activePill" pills>
-	  <li class="active"><a href="" id="hitsAvailablePill" ng-click="draw('hitsChart')">HITs available</a></li>
-	  <li><a href="" id="hitsPostedPill" ng-click="draw('hitGroupsChart')">HITs posted</a></li>
-	</ul>
-	 -->
 	<table ng-table="tableParams" template-pagination="custom/pager" class="table table-hover">
-	    <tr ng-repeat="requester in $data">
-	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8"><a ng-href="#/toprequesters/{{requester.requesterId}}">{{requester.requesterName}}</a></td>
-	        <td data-title="'hits'" sortable="'hits'" class="col-md-2">{{requester.hits}}</td>
-	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{requester.reward}}</td>
+	    <tr ng-repeat="hitgroup in $data">
+	        <td data-title="'HIT title'" sortable="'title'" class="col-md-7">{{hitgroup.title}}</td>
+	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{hitgroup.reward}}</td>
+	        <td data-title="'posted'" sortable="'firstSeen'" class="col-md-3">{{hitgroup.firstSeen}}</td>
 	    </tr>
     </table>
     

@@ -24,7 +24,6 @@ import com.google.appengine.api.search.Query;
 import com.google.appengine.api.search.QueryOptions;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
-import com.googlecode.objectify.Key;
 import com.tracker.entity.HITgroup;
 
 @Api(name = "mturk", description = "The API for mturk-tracker", version = "v1")
@@ -38,13 +37,8 @@ public class HitGroupEndpoint {
 	}
 	
 	@ApiMethod(name = "hitgroup.listByRequesterId", path = "hitgroup/listByRequesterId", httpMethod = HttpMethod.GET)
-	public List<String> listByRequesterId(@Named("requesterId") String requesterId) {
-	  List<String> result = new ArrayList<String>();
-	  Iterable<Key<HITgroup>> iterator = ofy().load().type(HITgroup.class).filter("requesterId", requesterId).keys();
-	  for (Key<HITgroup> k : iterator) {
-	    result.add(k.getRaw().getName());
-	  }
-	  return result;
+	public List<HITgroup> listByRequesterId(@Named("requesterId") String requesterId) {
+	    return ofy().load().type(HITgroup.class).filter("requesterId", requesterId).list();
 	}
 
 	@ApiMethod(name = "hitgroup.search", path = "hitgroup/search", httpMethod = HttpMethod.GET)
