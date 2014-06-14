@@ -1,0 +1,51 @@
+<div class="row" ng-show="readyToShow == true">
+	<div class="col-md-12">
+		<h4>Hit details: {{hit.title}}</h4>
+   	</div>
+	<div class="col-md-12">
+		<table class="table table-bordered table-striped table-condensed">
+            <thead>
+                <tr>
+                    <th>Requester</th>
+                    <td>
+                        <a ng-href="#/toprequesters/{{hit.requesterId}}">
+                            {{requester.requesterName}}
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Reward</th>
+                    <td>{{hit.reward}}</td>
+                </tr>
+                <tr>
+                    <th>Time alloted</th>
+                    <td>{{hit.timeAlloted}}</td>
+                </tr>
+                <tr>
+                    <th>Occurrence date</th>
+                    <td>{{hit.firstSeen| date:'medium'}}</td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>{{hit.description}}</td>
+                </tr>
+                <tr>
+                    <th>Keywords</th>
+                    <td>
+	                    <span ng-repeat="keyword in hit.keywords">
+						    {{keyword}}<span ng-show=" ! $last ">,</span>
+						</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Qualifications</th>
+                    <td>
+                    	<span ng-repeat="qualification in hit.qualifications">
+						    {{qualification}}<span ng-show=" ! $last ">,</span>
+						</span>
+                    </td>
+                </tr>
+            </thead>
+        </table>
+	</div>
+</div>

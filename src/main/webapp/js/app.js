@@ -7,6 +7,7 @@ angular.module('mturk', ['ngRoute', 'ngSanitize', 'ui.bootstrap', 'googlechart',
     .when('/general', {templateUrl: views.general, controller: 'GeneralController'})
     .when('/toprequesters', {templateUrl: views.topRequesters, controller: 'TopRequestersController'})
     .when('/toprequesters/:requesterId', {templateUrl: views.requesterDetails, controller: 'RequesterDetailsController'})
+    .when('/toprequesters/:requesterId/hit/:groupId', {templateUrl: views.hitDetails, controller: 'HitDetailsController'})
     .when('/search', {templateUrl: views.search, controller: 'SearchController'})
     .otherwise({redirectTo: '/general'});
 }])

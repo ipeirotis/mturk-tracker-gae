@@ -16,31 +16,11 @@
 		</form>
 	</div>
 	
-	<table ng-table="tableParams" template-pagination="custom/pager" class="table table-hover">
+	<table ng-table="tableParams" template-pagination="views/table/pager.html" class="table table-hover">
 	    <tr ng-repeat="hitGroup in $data">
 	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-3">{{hitGroup.requesterName}}</td>
 	        <td data-title="'Title'" sortable="'title'" class="col-md-3">{{hitGroup.title}}</td>
 	        <td data-title="'Description'" class="col-md-6">{{hitGroup.description}}</td>
 	    </tr>
     </table>
-    
-    <script type="text/ng-template" id="custom/pager">
-        <ul class="pager ng-cloak">
-          <li ng-repeat="page in pages"
-                ng-class="{'disabled': !page.active, 'previous': page.type == 'prev', 'next': page.type == 'next'}"
-                ng-show="page.type == 'prev' || page.type == 'next'" ng-switch="page.type">
-            <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo; Previous</a>
-            <a ng-switch-when="next" ng-click="params.page(page.number)" href="">Next &raquo;</a>
-          </li>
-          <li>
-            <div class="btn-group" ng-show="params.data.length>0">
-                <button type="button" ng-class="{'active':params.count() == 10}" ng-click="params.count(10)" class="btn btn-default btn-sm">10</button>
-                <button type="button" ng-class="{'active':params.count() == 25}" ng-click="params.count(25)" class="btn btn-default btn-sm">25</button>
-                <button type="button" ng-class="{'active':params.count() == 50}" ng-click="params.count(50)" class="btn btn-default btn-sm">50</button>
-                <button type="button" ng-class="{'active':params.count() == 100}" ng-click="params.count(100)" class="btn btn-default btn-sm">100</button>
-				<button type="button" class="btn btn-default btn-sm" disabled="disabled">Page {{params.page()}} of {{params.total()/params.count() | ceil}}</button>
-			</div>
-          </li>
-        </ul>
-    </script>
 </div>

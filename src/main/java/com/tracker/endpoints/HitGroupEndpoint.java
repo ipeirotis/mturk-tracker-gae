@@ -3,7 +3,9 @@ package com.tracker.endpoints;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +37,27 @@ public class HitGroupEndpoint {
 	public HITgroup getByGroupId(@Named("groupId") String groupId) {
 		return ofy().load().type(HITgroup.class).id(groupId).now();
 	}
-	
+
 	@ApiMethod(name = "hitgroup.listByRequesterId", path = "hitgroup/listByRequesterId", httpMethod = HttpMethod.GET)
-	public List<HITgroup> listByRequesterId(@Named("requesterId") String requesterId) {
-	    return ofy().load().type(HITgroup.class).filter("requesterId", requesterId).list();
+	public List<HITgroup> listByRequesterId(
+	        @Named("requesterId") String requesterId,
+	        @Nullable @Named("days") Integer days) {
+	    com.googlecode.objectify.cmd.Query<HITgroup> query =
+	            ofy().load().type(HITgroup.class).filter("requesterId", requesterId);
+
+	    if(days != null) {
+	        Calendar cal = Calendar.getInstance();
+	        cal.setTime(new Date());
+	        cal.set(Calendar.HOUR_OF_DAY, 0);
+	        cal.set(Calendar.MINUTE, 0);
+	        cal.set(Calendar.SECOND, 0);
+	        cal.set(Calendar.MILLISECOND, 0);
+	        cal.add(Calendar.DATE, -days);
+
+	        query = query.filter("firstSeen >", cal.getTime());
+	    }
+
+	    return query.list();
 	}
 
 	@ApiMethod(name = "hitgroup.search", path = "hitgroup/search", httpMethod = HttpMethod.GET)

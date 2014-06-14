@@ -15,6 +15,10 @@
     <property name="requesterId" direction="asc"/>
     <property name="expirationDate" direction="asc"/>
   </datastore-index>
+  <datastore-index kind="HITgroup" ancestor="false" source="manual">
+    <property name="requesterId" direction="asc"/>
+    <property name="firstSeen" direction="asc"/>
+  </datastore-index>
   <datastore-index kind="TopRequester" ancestor="false" source="manual">
     <property name="timestamp" direction="asc"/>
     <property name="reward" direction="desc"/>

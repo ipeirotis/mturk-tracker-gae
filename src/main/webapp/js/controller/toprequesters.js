@@ -5,7 +5,7 @@ angular.module('mturk').controller('TopRequestersController',
 
       $scope.load = function() {
           dataService.toprequesters(function(resp){
-              $scope.topRequesters = resp.items || [];
+              $scope.topRequesters = resp || [];
               $scope.tableParams.reload();
           }, function(error){});
       };

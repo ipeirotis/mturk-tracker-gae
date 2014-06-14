@@ -102,7 +102,7 @@
 	        com.tracker.endpoints.HitGroupEndpoint,
 	        com.tracker.endpoints.HitInstanceEndpoint,
 	        com.tracker.endpoints.MarketStatisticsEndpoint,
-	        com.tracker.endpoints.TopRequestersEndpoint
+	        com.tracker.endpoints.RequesterEndpoint
 	      </param-value>
 	    </init-param>
 	</servlet>
