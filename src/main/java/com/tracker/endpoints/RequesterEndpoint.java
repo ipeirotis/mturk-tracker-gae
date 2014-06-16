@@ -32,8 +32,8 @@ public class RequesterEndpoint {
 	    cal.set(Calendar.MILLISECOND, 0);
 	    cal.add(Calendar.DATE, -30);//last 30 days
 
-	    return ofy().load().type(TopRequester.class).filter("timestamp >=", cal.getTime())
-	            .order("timestamp").order("-reward").limit(100).list();
+	    return ofy().load().type(TopRequester.class).filter("timestamp =", cal.getTime())
+	            .order("timestamp").order("-reward").limit(1000).list();
 	}
 
 }

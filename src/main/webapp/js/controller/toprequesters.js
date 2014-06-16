@@ -1,6 +1,8 @@
 angular.module('mturk').controller('TopRequestersController',
   ['$scope', 'dataService', 'ngTableParams', '$filter', function ($scope, dataService, ngTableParams, $filter) {
       
+      $scope.dateFrom = new Date().setDate(new Date().getDate() - 30);
+      $scope.dateTo = new Date();
       $scope.topRequesters = [];
 
       $scope.load = function() {

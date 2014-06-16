@@ -7,6 +7,10 @@ angular.module('mturk').factory('dataService', ['$http', '$cacheFactory', functi
 	        $http.get(this.getApiUrl() + '/arrivalCompletions/list?from=' + from + '&to=' + to)
 	        .success(success).error(error);
 	    },
+	    loadHitInstances: function(groupId, from, to, success, error) {
+            $http.get(this.getApiUrl() + '/hitinstance/list?from=' + from + '&to=' + to + '&groupId=' + groupId)
+            .success(success).error(error);
+        },
 	    toprequesters: function(success, error) {
 	        $http.get(this.getApiUrl() + '/toprequester/list').success(function(response) {
                 angular.forEach(response.items, function(requester){

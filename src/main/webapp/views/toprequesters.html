@@ -1,10 +1,5 @@
 <div class="row">
-	<!-- 
-	<ul class="nav nav-pills" ng-model="activePill" pills>
-	  <li class="active"><a href="" id="hitsAvailablePill" ng-click="draw('hitsChart')">HITs available</a></li>
-	  <li><a href="" id="hitsPostedPill" ng-click="draw('hitGroupsChart')">HITs posted</a></li>
-	</ul>
-	 -->
+	<h4>Top-1000 Requesters, report for {{dateFrom | date:'longDate'}} to {{dateTo | date:'longDate'}}</h4>
 	<table ng-table="tableParams" template-pagination="views/table/pager.html" class="table table-hover">
 	    <tr ng-repeat="requester in $data">
 	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8"><a ng-href="#/toprequesters/{{requester.requesterId}}">{{requester.requesterName}}</a></td>

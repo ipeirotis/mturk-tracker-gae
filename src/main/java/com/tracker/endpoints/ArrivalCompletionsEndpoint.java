@@ -28,16 +28,16 @@ public class ArrivalCompletionsEndpoint {
 	   dateFrom.set(Calendar.HOUR_OF_DAY, 0);
 	   dateFrom.set(Calendar.MINUTE, 0);
 	   dateFrom.set(Calendar.SECOND, 0);
-	  
-		Calendar dateTo = Calendar.getInstance();
-		dateTo.setTime(formatter.parse(to));
-		dateTo.set(Calendar.HOUR_OF_DAY, 23);
-		dateTo.set(Calendar.MINUTE, 59);
-		dateTo.set(Calendar.SECOND, 59);
-		
-		return ofy().load().type(ArrivalCompletions.class)
-				.filter("from >=", dateFrom.getTime())
-				.filter("from <=", dateTo.getTime()).list();
+
+	   Calendar dateTo = Calendar.getInstance();
+	   dateTo.setTime(formatter.parse(to));
+	   dateTo.set(Calendar.HOUR_OF_DAY, 23);
+	   dateTo.set(Calendar.MINUTE, 59);
+	   dateTo.set(Calendar.SECOND, 59);
+
+	   return ofy().load().type(ArrivalCompletions.class)
+	           .filter("from >=", dateFrom.getTime())
+	           .filter("from <=", dateTo.getTime()).list();
 	}
 
 }
