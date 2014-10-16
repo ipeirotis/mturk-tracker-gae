@@ -1,5 +1,6 @@
 package com.tracker.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import com.googlecode.objectify.annotation.Cache;
@@ -9,7 +10,8 @@ import com.googlecode.objectify.annotation.Index;
 
 @Entity
 @Cache
-public class ArrivalCompletions {
+@SuppressWarnings("serial")
+public class ArrivalCompletions implements Serializable{
 
 	@Id
 	private Long id;

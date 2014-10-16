@@ -6,6 +6,15 @@
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
 	<servlet>
+		<servlet-name>CacheArrivalCompletions</servlet-name>
+		<servlet-class>com.tracker.servlet.task.CacheArrivalCompletions</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CacheArrivalCompletions</servlet-name>
+		<url-pattern>/cacheArrivalCompletions</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
 		<servlet-name>ScheduleTopRequestersComputation</servlet-name>
 		<servlet-class>com.tracker.servlet.schedule.ScheduleTopRequestersComputation</servlet-class>
 	</servlet>
@@ -13,7 +22,7 @@
 		<servlet-name>ScheduleTopRequestersComputation</servlet-name>
 		<url-pattern>/scheduleTopRequestersComputation</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet>
 		<servlet-name>ComputeTopRequesters</servlet-name>
 		<servlet-class>com.tracker.servlet.task.ComputeTopRequesters</servlet-class>
