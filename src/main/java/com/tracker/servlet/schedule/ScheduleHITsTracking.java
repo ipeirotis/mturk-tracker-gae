@@ -33,7 +33,7 @@ public class ScheduleHITsTracking extends HttpServlet {
   }
 
   private void schedule(String groupId) {
-    Queue queue = QueueFactory.getQueue("trackHITs");
+    Queue queue = QueueFactory.getQueue("trackHITs1");
     queue.add(Builder
         .withUrl("/trackHits")
         .param("groupId", groupId)

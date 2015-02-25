@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-md-12">
-		<h4>Hit details: {{hit.title}}</h4>
+		<h4>HIT details: {{hit.title}}</h4>
    	</div>
 	<div class="col-md-6">
 		<table class="table table-bordered table-striped table-condensed" ng-show="readyToShow == true">
@@ -8,7 +8,7 @@
                 <tr>
                     <th>Requester</th>
                     <td>
-                        <a ng-href="#/toprequesters/{{hit.requesterId}}">
+                        <a ng-href="#/requester/{{hit.requesterId}}">
                             {{requester.requesterName}}
                         </a>
                     </td>

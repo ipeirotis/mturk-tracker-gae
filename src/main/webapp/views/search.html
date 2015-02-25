@@ -7,9 +7,8 @@
 			</div>
 			<div class="form-group">
 				<label for="selectedSearchFields">In fields</label>
-				<select ng-model="selectedSearchFields" class="form-control input-sm" id="selectedSearchFields"
+				<select ng-model="searchField" class="form-control input-sm" id="selectedSearchFields"
 					ng-options="searchField.id as searchField.value for searchField in searchFields">
-					<option value=""></option>
 				</select>
 			</div>
 			<button type="button" class="btn btn-default btn-sm" ng-click="search()">Search</button>
@@ -18,9 +17,18 @@
 	
 	<table ng-table="tableParams" template-pagination="views/table/pager.html" class="table table-hover">
 	    <tr ng-repeat="hitGroup in $data">
-	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-3">{{hitGroup.requesterName}}</td>
-	        <td data-title="'Title'" sortable="'title'" class="col-md-3">{{hitGroup.title}}</td>
-	        <td data-title="'Description'" class="col-md-6">{{hitGroup.description}}</td>
+	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-2">
+                <a ng-href="#/requester/{{hitGroup.requesterId}}">{{hitGroup.requesterName}}</a>
+            </td>
+	        <td data-title="'Title'" sortable="'title'" class="col-md-2">
+                <a ng-href="#/HITgroup/{{hitGroup.id}}">{{hitGroup.title}}</a>
+            </td>
+	        <td data-title="'Description'" class="col-md-4">{{hitGroup.description}}</td>
+            <td data-title="'Keywords'" class="col-md-2">{{hitGroup.keywords}}</td>
+            <td class="col-md-2">
+                <div>reward: {{hitGroup.reward/100}}</div>
+                <div>time allotted: {{hitGroup.timeAllotted}}</div>
+            </td>
 	    </tr>
     </table>
 </div>

@@ -2,7 +2,7 @@
 	<h4>Top-1000 Requesters, report for {{dateFrom | date:'longDate'}} to {{dateTo | date:'longDate'}}</h4>
 	<table ng-table="tableParams" template-pagination="views/table/pager.html" class="table table-hover">
 	    <tr ng-repeat="requester in $data">
-	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8"><a ng-href="#/toprequesters/{{requester.requesterId}}">{{requester.requesterName}}</a></td>
+	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8"><a ng-href="#/requester/{{requester.requesterId}}">{{requester.requesterName}}</a></td>
 	        <td data-title="'hits'" sortable="'hits'" class="col-md-2">{{requester.hits}}</td>
 	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{requester.reward/100}}</td>
 	    </tr>

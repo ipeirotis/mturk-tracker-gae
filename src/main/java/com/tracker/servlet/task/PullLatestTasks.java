@@ -205,7 +205,7 @@ public class PullLatestTasks extends HttpServlet {
 
             //create new HITcontent
             HITcontent hitContent = new HITcontent(groupId, content);
-            addToIndex(hitGroup, requesterName, content);
+            addToIndex(hitGroup, requesterId, requesterName, content);
             hitContents.add(hitContent);
 
             // Create a new (the first) HITinstance
@@ -224,17 +224,20 @@ public class PullLatestTasks extends HttpServlet {
     }
   }
   
-  private void addToIndex(HITgroup hitGroup, String requesterName, String content){
+  private void addToIndex(HITgroup hitGroup, String requesterId, String requesterName, String content){
       Index index = SearchServiceFactory.getSearchService()
               .getIndex(IndexSpec.newBuilder().setName("hit_group_index"));
 
       com.google.appengine.api.search.Document doc = com.google.appengine.api.search.Document.newBuilder()
+                  .addField(Field.newBuilder().setName("requesterId").setText(requesterId))
                   .addField(Field.newBuilder().setName("requesterName").setText(requesterName))
                   .addField(Field.newBuilder().setName("title").setText(hitGroup.getTitle()))
                   .addField(Field.newBuilder().setName("description").setText(hitGroup.getDescription()))
                   .addField(Field.newBuilder().setName("hitContent").setText(optimizeContentForIndex(content)))
                   .addField(Field.newBuilder().setName("keywords").setText(StringUtils.join(hitGroup.getKeywords(), ", ")))
                   .addField(Field.newBuilder().setName("qualifications").setText(StringUtils.join(hitGroup.getQualificationsRequired(), ", ")))
+                  .addField(Field.newBuilder().setName("reward").setText(String.valueOf(hitGroup.getReward())))
+                  .addField(Field.newBuilder().setName("timeAllotted").setText(String.valueOf(hitGroup.getTimeAlloted())))
                   .setId(hitGroup.getGroupId())
                   .build();
       index.put(doc);

@@ -3,6 +3,7 @@ package com.tracker.endpoints;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -62,39 +63,48 @@ public class HitGroupEndpoint {
 
 	@ApiMethod(name = "hitgroup.search", path = "hitgroup/search", httpMethod = HttpMethod.GET)
 	public List<Map<String, String>> search(
+	        @Nullable @Named("all") String all,
 	        @Nullable @Named("requesterName") String requesterName,
 	        @Nullable @Named("title") String title,
 	        @Nullable @Named("description") String description,
 	        @Nullable @Named("hitContent") String hitContent,
 	        @Nullable @Named("keyword") String keyword,
 	        @Nullable @Named("qualification") String qualification) {
-	    
+
 	    List<String> params = new ArrayList<String>();
-	    if(requesterName != null) {
-	        params.add("requesterName=" + requesterName);
+	    String queryString;
+	    if(all != null) {
+	        for(String param : Arrays.asList("requesterName", "title", "description", "hitContent", "keywords", "qualifications")) {
+	            params.add(param + "=" + all);
+	        }
+	        queryString = StringUtils.join(params, " OR ");
+	    } else {
+	        if(requesterName != null) {
+	            params.add("requesterName=" + requesterName);
+	        }
+	        if(title != null) {
+	            params.add("title=" + title);
+	        }
+	        if(description != null) {
+	            params.add("description=" + description);
+	        }
+	        if(hitContent != null) {
+	            params.add("hitContent=" + hitContent);
+	        }
+	        if(keyword != null) {
+	            params.add("keywords=" + keyword);
+	        }
+	        if(qualification != null) {
+	            params.add("qualifications=" + qualification);
+	        }
+	        queryString = StringUtils.join(params, " AND ");
 	    }
-	    if(title != null) {
-	        params.add("title=" + title);
-	    }
-	    if(description != null) {
-	        params.add("description=" + description);
-	    }
-	    if(hitContent != null) {
-	        params.add("hitContent=" + hitContent);
-	    }
-	    if(keyword != null) {
-	        params.add("keywords=" + keyword);
-	    }
-	    if(qualification != null) {
-	        params.add("qualifications=" + qualification);
-	    }
-	    
-	    String queryString = StringUtils.join(params, " AND ");	    
-	    
+
 	    IndexSpec indexSpec = IndexSpec.newBuilder().setName("hit_group_index").build();
 	    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 	    QueryOptions options = QueryOptions.newBuilder()
-	            .setFieldsToReturn("requesterName", "title", "description").setLimit(1000).build();
+	            .setFieldsToReturn("requesterId", "requesterName", "title", "description", "keywords", "reward", "timeAllotted")
+	            .setLimit(1000).build();
 	    Query query = Query.newBuilder().setOptions(options).build(queryString);
 	    Collection<ScoredDocument> docs = index.search(query).getResults();
 	    
@@ -105,6 +115,7 @@ public class HitGroupEndpoint {
 	        for (Field field : doc.getFields()){
 	            fields.put(field.getName(), field.getText());
 	        }
+	        fields.put("id", doc.getId());
 	        result.add(fields);
 	    }
 

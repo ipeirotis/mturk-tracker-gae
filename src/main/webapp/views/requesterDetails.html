@@ -3,8 +3,8 @@
 		<h4>Tasks posted during last 30 days by {{requester.requesterName}}</h4>
 		<table ng-table="tableParams" template-pagination="views/table/pager.html" class="table table-hover">
 		    <tr ng-repeat="hitgroup in $data">
-		        <td data-title="'HIT title'" sortable="'title'" class="col-md-7"><a ng-href="#/toprequesters/{{hitgroup.requesterId}}/hit/{{hitgroup.groupId}}">{{hitgroup.title}}</a></td>
-		        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{hitgroup.reward}}</td>
+		        <td data-title="'HIT title'" sortable="'title'" class="col-md-7"><a ng-href="#/HITgroup/{{hitgroup.groupId}}">{{hitgroup.title}}</a></td>
+		        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{hitgroup.reward/100}}</td>
 		        <td data-title="'posted'" sortable="'firstSeen'" class="col-md-3">{{hitgroup.firstSeen| date:'medium'}}</td>
 		    </tr>
 	    </table>

@@ -44,11 +44,8 @@ angular.module('mturk').factory('dataService', ['$http', '$cacheFactory', functi
 	        $http.get(this.getApiUrl() + '/hitgroup/search', {params: params}).success(success).error(error);
 	    },
 	    getApiUrl: function(){
-			var host = window.location.host;
-			var protocol = host.indexOf('localhost', 0) == 0 ? 'http' : 'https';
-			var url = protocol + '://' + host + '/_ah/api/mturk/v1';
-			
-			return url;
+			return window.location.host.indexOf('localhost', 0) == 0 ? 'http://localhost:8080/_ah/api/mturk/v1' : 
+			    'https://crowd-power.appspot.com/_ah/api/mturk/v1';
 	    }
 	};
 }]);
