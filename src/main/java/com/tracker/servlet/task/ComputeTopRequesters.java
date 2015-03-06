@@ -34,13 +34,13 @@ public class ComputeTopRequesters extends HttpServlet {
       Date from = new Date(Long.parseLong(fromParam));
       
       List<HITgroup> groups = ofy().load().type(HITgroup.class)
-              .filter("expirationDate >", from).filter("requesterId", requesterId).list();
+              .filter("lastSeen >", from).filter("requesterId", requesterId).list();
       
       Integer hitsArrived = 0;
       Integer rewardsArrived = 0;
       
       for(HITgroup group : groups) {
-          List<HITinstance> instances = getHitInstances(group.getGroupId());
+          List<HITinstance> instances = getHitInstances(group.getGroupId(), from);
           for(HITinstance inst : instances) {
               if(inst.getHitsDiff() != null) {
                   if(inst.getHitsDiff() > 0){
@@ -60,9 +60,9 @@ public class ComputeTopRequesters extends HttpServlet {
       ofy().save().entity(topRequester);
   }
   
-  public List<HITinstance> getHitInstances(String groupId) {
+  public List<HITinstance> getHitInstances(String groupId, Date from) {
       List<HITinstance> result = new ArrayList<HITinstance>();
-      Query<HITinstance> q = ofy().load().type(HITinstance.class).filter("groupId", groupId);
+      Query<HITinstance> q = ofy().load().type(HITinstance.class).filter("groupId", groupId).filter("timestamp >", from);
       Cursor cursor = null;
 
       while (true) {
