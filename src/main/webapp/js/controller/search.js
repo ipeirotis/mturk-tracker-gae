@@ -4,7 +4,7 @@ angular.module('mturk').controller('SearchController',
 
      $scope.hitGroups = [];
      $scope.searchValue = $routeParams.searchValue;
-     $scope.searchField = $routeParams.searchField;
+     $scope.searchField = $routeParams.searchField || 'all';
       
      $scope.searchFields = [
                              { id: 'all', value: 'All' },

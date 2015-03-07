@@ -183,7 +183,8 @@ public class ComputeArrivalCompletions extends HttpServlet {
       return;
     }
     
-    ArrivalCompletions existing = ofy().load().type(ArrivalCompletions.class).filter("from", from.getTime()).filter("to", to.getTime()).limit(1).first().now();
+    ArrivalCompletions existing = ofy().load().type(ArrivalCompletions.class)
+            .filter("from", from.getTime()).filter("to", to.getTime()).limit(1).first().now();
     if (existing != null) {
       ofy().delete().entity(existing);
     }

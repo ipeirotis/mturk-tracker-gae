@@ -55,7 +55,7 @@ public class HitGroupEndpoint {
 	        cal.set(Calendar.MILLISECOND, 0);
 	        cal.add(Calendar.DATE, -days);
 
-	        query = query.filter("firstSeen >", cal.getTime());
+	        query = query.filter("lastSeen >", cal.getTime());
 	    }
 
 	    return query.list();

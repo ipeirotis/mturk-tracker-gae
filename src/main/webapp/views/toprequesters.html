@@ -4,7 +4,7 @@
 	    <tr ng-repeat="requester in $data">
 	        <td data-title="'Requester name'" sortable="'requesterName'" class="col-md-8"><a ng-href="#/requester/{{requester.requesterId}}">{{requester.requesterName}}</a></td>
 	        <td data-title="'hits'" sortable="'hits'" class="col-md-2">{{requester.hits}}</td>
-	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{requester.reward/100}}</td>
+	        <td data-title="'reward'" sortable="'reward'" class="col-md-2">{{requester.reward/100 | currency}}</td>
 	    </tr>
     </table>
 </div>

@@ -6,7 +6,10 @@ angular.module('mturk').controller('HitDetailsController',
       $scope.to = new Date();
 
       $scope.hitsChart = {
-              options: {scaleType: 'allfixed'},
+              options: {
+                  scaleType: 'allfixed',
+                  dateFormat: 'HH:mm MMMM dd, yyyy'
+                  },
               type: 'AnnotationChart',
               data: {"cols": [
                               {id: "id1", label: "Date", type: "date"},
@@ -21,19 +24,25 @@ angular.module('mturk').controller('HitDetailsController',
       });
 
       $scope.loadHits = function(){
-          dataService.loadHitInstances($routeParams.groupId, $filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
-             var rows = [];
-             angular.forEach(response.items, function(item){
+          dataService.loadHitInstances($routeParams.groupId,
+                  $filter('date')($scope.from, 'MM/dd/yyyy'),
+                  $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){
+              var rows = [];
+              if($scope.hit.firstSeen) {
+                  $scope.hitsChart.options.min = new Date($scope.hit.firstSeen);
+              }
+              if($scope.hit.lastSeen) {
+                  $scope.hitsChart.options.max = new Date($scope.hit.lastSeen);
+              }
+              angular.forEach(response.items, function(item){
                   rows.push({c:[{v: new Date(item.timestamp)}, {v: parseInt(item.hitsAvailable)}]});
-             });
+              });
 
-             $scope.hitsChart.data.rows = rows;
+              $scope.hitsChart.data.rows = rows;
           }, function(error){
-              //TODO
+              console.log(error);
           });
       };
-
-      $scope.loadHits();
 
       $scope.getRequester = function(requesterId) {
           dataService.getRequester(requesterId, function(resp){
@@ -45,8 +54,11 @@ angular.module('mturk').controller('HitDetailsController',
       $scope.loadHit = function() {
           dataService.hitgroup($routeParams.groupId, function(resp){
               $scope.hit = resp;
+              $scope.loadHits();
               $scope.readyToShow = true;
-          }, function(error){});
+          }, function(error){
+              console.log(error);
+          });
       };
 
       $scope.loadHit();
@@ -54,14 +66,12 @@ angular.module('mturk').controller('HitDetailsController',
       $scope.openFromPicker = function($event) {
           $event.preventDefault();
           $event.stopPropagation();
-
           $scope.openedFrom = true;
       };
 
       $scope.openToPicker = function($event) {
           $event.preventDefault();
           $event.stopPropagation();
-
           $scope.openedTo = true;
       };
       

@@ -1,34 +1,95 @@
 angular.module('mturk').controller('CompletionsController', ['$scope', '$filter', 'dataService', 
     function ($scope, $filter, dataService) {
 
-    $scope.from = new Date().setDate(new Date().getDate() - 7);
+    $scope.from = new Date();
+    $scope.from.setMonth(new Date().getMonth() - 1);
     $scope.to = new Date();
+    $scope.weekAgo = new Date();
+    $scope.weekAgo.setDate(new Date().getDate() - 7);
     
     $scope.rows = {
-            hitsChart: [],
-            hitGroupsChart: [],
-            rewardsChart: []
+            hitsChartHourly: [],
+            hitGroupsChartHourly: [],
+            rewardsChartHourly: [],
+            hitsChartDaily: [],
+            hitGroupsChartDaily: [],
+            rewardsChartDaily: [],
     };
 
-    $scope.hitsChart = {
-            options: {scaleType: 'allfixed'},
+    $scope.hitsChartHourly = {
+            options: {
+                scaleType: 'allfixed',
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.weekAgo,
+                zoomEndTime:  $scope.to
+                },
             type: 'AnnotationChart',
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "HITs completed", type: "number"}],
                             "rows": []}
     };
-    
-    $scope.hitGroupsChart = {
+
+    $scope.hitsChartDaily = {
+            options: {
+                scaleType: 'allfixed',
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.from,
+                zoomEndTime:  $scope.to
+                },
             type: 'AnnotationChart',
+            data: {"cols": [
+                            {id: "id1", label: "Date", type: "date"},
+                            {id: "id2", label: "HITs completed", type: "number"}],
+                            "rows": []}
+    };
+
+    $scope.hitGroupsChartHourly = {
+            type: 'AnnotationChart',
+            options: {
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.weekAgo,
+                zoomEndTime:  $scope.to
+                },
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "HIT groups completed", type: "number"}],
                             "rows": []}
     };
 
-    $scope.rewardsChart = {
+    $scope.hitGroupsChartDaily = {
             type: 'AnnotationChart',
+            options: {
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.from,
+                zoomEndTime:  $scope.to
+                },
+            data: {"cols": [
+                            {id: "id1", label: "Date", type: "date"},
+                            {id: "id2", label: "HIT groups completed", type: "number"}],
+                            "rows": []}
+    };
+
+    $scope.rewardsChartHourly = {
+            type: 'AnnotationChart',
+            options: {
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.weekAgo,
+                zoomEndTime:  $scope.to
+                },
+            data: {"cols": [
+                            {id: "id1", label: "Date", type: "date"},
+                            {id: "id2", label: "Rewards completed", type: "number"}],
+                            "rows": []}
+    };
+
+    $scope.rewardsChartDaily = {
+            type: 'AnnotationChart',
+            options: {
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.from,
+                zoomEndTime:  $scope.to
+                },
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "Rewards completed", type: "number"}],
@@ -41,21 +102,35 @@ angular.module('mturk').controller('CompletionsController', ['$scope', '$filter'
         }
     });
     
-    $scope.charts = ['hitsChart', 'hitGroupsChart', 'rewardsChart'];
+    $scope.charts = ['hitsChartHourly', 'hitsChartDaily', 'hitGroupsChartHourly', 'hitGroupsChartDaily',
+                     'rewardsChartHourly', 'rewardsChartDaily'];
     $scope.drawnCharts = [];
-    $scope.visibleChart = 'hitsChart';
-    $scope.activePill = 'hitsChartPill';
+    $scope.visibleChart = 'hitsChartHourly';
+    $scope.activePill = 'hitsChartHourlyPill';
     
     $scope.load = function(){
         dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
-            angular.forEach(response.items, function(item){
-                $scope.rows.hitsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsCompleted)}]});
-                $scope.rows.hitGroupsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsCompleted)}]});
-                $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)/100}]});
+            $scope.rows.hitsChartHourly = [];
+            $scope.rows.hitGroupsChartHourly = [];
+            $scope.rows.rewardsChartHourly = [];
+            $scope.rows.hitsChartDaily = [];
+            $scope.rows.hitGroupsChartDaily = [];
+            $scope.rows.rewardsChartDaily = [];
+
+            angular.forEach(response.hourly, function(item){
+                $scope.rows.hitsChartHourly.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsCompleted)}]});
+                $scope.rows.hitGroupsChartHourly.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsCompleted)}]});
+                $scope.rows.rewardsChartHourly.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)/100}]});
             });
-            
+
+            angular.forEach(response.daily, function(item){
+                $scope.rows.hitsChartDaily.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsCompleted)}]});
+                $scope.rows.hitGroupsChartDaily.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsCompleted)}]});
+                $scope.rows.rewardsChartDaily.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsCompleted)/100}]});
+            });
+
             $scope.drawnCharts = [];
-            $scope.draw('hitsChart');
+            $scope.draw($scope.visibleChart);
         }, function(error){
             //TODO
         });

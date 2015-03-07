@@ -32,7 +32,7 @@ public class CacheArrivalCompletions extends HttpServlet {
       dateFrom.set(Calendar.MINUTE, 0);
       dateFrom.set(Calendar.SECOND, 0);
       dateFrom.set(Calendar.MILLISECOND, 0);
-      dateFrom.add(Calendar.DATE, -7);
+      dateFrom.add(Calendar.MONTH, -1);
 
       Calendar dateTo = Calendar.getInstance();
       dateTo.setTime(new Date());
@@ -44,7 +44,6 @@ public class CacheArrivalCompletions extends HttpServlet {
       
       String memcacheKey = "arrival_completions_" + dateFrom.getTime() + 
               "_" + dateTo.getTime();
-      logger.info(memcacheKey);
 
       List<ArrivalCompletions> list = ofy().load().type(ArrivalCompletions.class)
               .filter("from >=", dateFrom.getTime())

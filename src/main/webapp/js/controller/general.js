@@ -1,8 +1,11 @@
 angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'dataService', 
     function ($scope, $filter, dataService) {
 
-    $scope.from = new Date().setDate(new Date().getDate() - 7);
+    $scope.from = new Date();
+    $scope.from.setMonth(new Date().getMonth() - 1);
     $scope.to = new Date();
+    $scope.weekAgo = new Date();
+    $scope.weekAgo.setDate(new Date().getDate() - 7);
     
     $scope.rows = {
             marketStatisticsChart: [],
@@ -11,9 +14,22 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
             rewardsChart: []
     };
 
+    $scope.chartsOptions = {
+            scaleType: 'allfixed',
+            dateFormat: 'HH:mm MMMM dd, yyyy',
+            zoomStartTime:  $scope.weekAgo,
+            zoomEndTime:  $scope.to
+        };
+
     $scope.marketStatisticsChart = {
             type: 'AnnotationChart',
-            options: {scaleType: 'allfixed', scaleColumns: [1,2]},
+            options: {
+                scaleType: 'allfixed',
+                scaleColumns: [1,2],
+                dateFormat: 'HH:mm MMMM dd, yyyy',
+                zoomStartTime:  $scope.weekAgo,
+                zoomEndTime:  $scope.to
+                },
             data: {"cols": [
                             {label: "Date", type: "date"},
                             {label: "HITs available", type: "number"},
@@ -23,7 +39,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
     
     $scope.groupsChart = {
             type: 'AnnotationChart',
-            options: {scaleType: 'allfixed'},
+            options: $scope.chartsOptions,
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "HIT groups posted", type: "number"}],
@@ -32,7 +48,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
 
     $scope.hitsChart = {
             type: 'AnnotationChart',
-            options: {scaleType: 'allfixed'},
+            options: $scope.chartsOptions,
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "HITs posted", type: "number"}],
@@ -41,7 +57,7 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
     
     $scope.rewardsChart = {
             type: 'AnnotationChart',
-            options: {scaleType: 'allfixed'},
+            options: $scope.chartsOptions,
             data: {"cols": [
                             {id: "id1", label: "Date", type: "date"},
                             {id: "id2", label: "Rewards posted", type: "number"}],
@@ -60,15 +76,20 @@ angular.module('mturk').controller('GeneralController', ['$scope', '$filter', 'd
     $scope.activePill = 'marketStatisticsChartPill';
     
     $scope.load = function(){
-        dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){ 
-            angular.forEach(response.items, function(item){
+        $scope.chartsOptions.zoomEndTime = $scope.to;
+        dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){
+            $scope.rows.marketStatisticsChart = [];
+            $scope.rows.groupsChart = [];
+            $scope.rows.hitsChart = [];
+            $scope.rows.rewardsChart = [];
+            angular.forEach(response.hourly, function(item){
                 $scope.rows.marketStatisticsChart.push({c:[{v: new Date(item.from)}, {v: item.hitsAvailableUI}, {v: item.hitGroupsAvailableUI}]});
                 $scope.rows.groupsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitGroupsArrived)}]});
                 $scope.rows.hitsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.hitsArrived)}]});
                 $scope.rows.rewardsChart.push({c:[{v: new Date(item.from)}, {v: parseInt(item.rewardsArrived) / 100}]});
             });
             $scope.drawnCharts = [];
-            $scope.draw('marketStatisticsChart');
+            $scope.draw($scope.visibleChart);
         }, function(error){
             //TODO
         });

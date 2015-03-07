@@ -19,11 +19,17 @@
 	</div>
 </div>
 <ul class="nav nav-pills" ng-model="activePill" pills>
-  <li class="active"><a href="" id="hitsChartPill" ng-click="draw('hitsChart')">HITs</a></li>
-  <li><a href="" id="hitGroupsChartPill" ng-click="draw('hitGroupsChart')">HIT groups</a></li>
-  <li><a href="" id="rewardsChartPill" ng-click="draw('rewardsChart')">Rewards</a></li>
+  <li class="active"><a href="" id="hitsChartHourlyPill" ng-click="draw('hitsChartHourly')">HITs (hourly)</a></li>
+  <li><a href="" id="hitsChartDailyPill" ng-click="draw('hitsChartDaily')">HITs (daily)</a></li>
+  <li><a href="" id="hitGroupsChartHourlyPill" ng-click="draw('hitGroupsChartHourly')">HIT groups (hourly)</a></li>
+  <li><a href="" id="hitGroupsChartDailyPill" ng-click="draw('hitGroupsChartDaily')">HIT groups (daily)</a></li>
+  <li><a href="" id="rewardsChartHourlyPill" ng-click="draw('rewardsChartHourly')">Rewards (hourly)</a></li>
+  <li><a href="" id="rewardsChartDailyPill" ng-click="draw('rewardsChartDaily')">Rewards (daily)</a></li>
 </ul>
 
-<div google-chart chart="hitsChart" id="hitsChart" style="display:block;width:100%;height:400px;" on-ready="chartReady('hitsChart')"/>
-<div google-chart chart="hitGroupsChart" id="hitGroupsChart" style="display:none;width:100%;height:400px;" on-ready="chartReady('hitGroupsChart')"/>
-<div google-chart chart="rewardsChart" id="rewardsChart" style="display:none;width:100%;height:400px;" on-ready="chartReady('rewardsChart')"/>
+<div google-chart chart="hitsChartHourly" id="hitsChartHourly" style="display:block;width:100%;height:400px;" on-ready="chartReady('hitsChartHourly')"/>
+<div google-chart chart="hitsChartDaily" id="hitsChartDaily" style="display:block;width:100%;height:400px;" on-ready="chartReady('hitsChartDaily')"/>
+<div google-chart chart="hitGroupsChartHourly" id="hitGroupsChartHourly" style="display:none;width:100%;height:400px;" on-ready="chartReady('hitGroupsChartHourly')"/>
+<div google-chart chart="hitGroupsChartDaily" id="hitGroupsChartDaily" style="display:none;width:100%;height:400px;" on-ready="chartReady('hitGroupsChartDaily')"/>
+<div google-chart chart="rewardsChartHourly" id="rewardsChartHourly" style="display:none;width:100%;height:400px;" on-ready="chartReady('rewardsChartHourly')"/>
+<div google-chart chart="rewardsChartDaily" id="rewardsChartDaily" style="display:none;width:100%;height:400px;" on-ready="chartReady('rewardsChartDaily')"/>
