@@ -129,7 +129,8 @@
 	        com.tracker.endpoints.HitGroupEndpoint,
 	        com.tracker.endpoints.HitInstanceEndpoint,
 	        com.tracker.endpoints.MarketStatisticsEndpoint,
-	        com.tracker.endpoints.RequesterEndpoint
+	        com.tracker.endpoints.RequesterEndpoint,
+	        com.tracker.endpoints.HitContentEndpoint
 	      </param-value>
 	    </init-param>
 	</servlet>
