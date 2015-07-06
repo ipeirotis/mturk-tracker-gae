@@ -65,7 +65,7 @@ public class HitGroupEndpoint {
 	public List<Map<String, String>> search(
 	        @Nullable @Named("all") String all,
 	        @Nullable @Named("requesterName") String requesterName,
-	        @Nullable @Named("title") String title,
+	        @Nullable @Named("titleT") String title,
 	        @Nullable @Named("description") String description,
 	        @Nullable @Named("hitContent") String hitContent,
 	        @Nullable @Named("keyword") String keyword,
