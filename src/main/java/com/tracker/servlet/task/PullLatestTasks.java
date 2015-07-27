@@ -2,18 +2,28 @@ package com.tracker.servlet.task;
 
 import static com.tracker.ofy.OfyService.ofy;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -25,12 +35,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.FormElement;
 import org.jsoup.select.Elements;
 
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
@@ -69,12 +83,17 @@ public class PullLatestTasks extends HttpServlet {
             "Reward", "LatestExpiration", "Title", "AssignmentDurationInSeconds"));
     private static final String DEFAULT_SORT_TYPE = "LastUpdatedTime";
     private static final String DEFAULT_SORT_DIRECTION = "1";
+    private static final String USERAGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36";
+    private static final String MTURK_AUTH_COOKIES = "mturk_auth_cookies";
+    private static final String MTURK_AUTH_CREDENTIALS = "mturk_auth_credentials";
 
     private static final String PREVIEW_URL = "https://www.mturk.com/mturk/preview?groupId=";
     private static final DateFormat df = SafeDateFormat.forPattern("MMM dd, yyyy");
     private static final NumberFormat cf = SafeCurrencyFormat.forLocale(Locale.US);
 
     private static final Pattern timePattern = Pattern.compile("\\d+ \\w+");
+
+    private MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -99,19 +118,26 @@ public class PullLatestTasks extends HttpServlet {
                 + "&sortType=" + URLEncoder.encode(sortType + ":" + sortDirection, "UTF-8");
 
         try {
-            loadAndParse(url, pageNumber == 1 && sortType == DEFAULT_SORT_TYPE && sortDirection == DEFAULT_SORT_DIRECTION);
+            Map<String, String> authCookies = new HashMap<String, String>();
+            authCookies.put("session-id", getProperty("session-id"));
+            authCookies.put("worker_state", getProperty("worker_state"));
+            //should be: Map<String, String> authCookies = getAuthCookies(); - disabled because CAPATCHA, using workaround with hardcoded session-id and worker_state
+            loadAndParse(url, authCookies, pageNumber == 1 && sortType == DEFAULT_SORT_TYPE && sortDirection == DEFAULT_SORT_DIRECTION);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error parsing page with URL: " + url, e);
         }
     }
 
-    private void loadAndParse(String url, boolean fetchStatistics) throws Exception {
-        Document doc = Jsoup.connect(url).get();
+    private void loadAndParse(String url, Map<String, String> authCookies, boolean fetchStatistics) throws Exception {
         Date now = new Date();
         List<HITgroup> hitGroups = new ArrayList<HITgroup>();
         List<HITcontent> hitContents = new ArrayList<HITcontent>();
         List<HITrequester> hitRequesters = new ArrayList<HITrequester>();
         List<HITinstance> hitInstances = new ArrayList<HITinstance>();
+
+        HttpURLConnection connection = createDefaultConnection(url);
+        connection.setRequestProperty("Cookie", getCookiesString(authCookies));
+        Document doc = Jsoup.parse(connection.getInputStream(), "UTF-8", connection.getURL().toString());
 
         //market statistics
         if (fetchStatistics) {
@@ -381,5 +407,187 @@ public class PullLatestTasks extends HttpServlet {
         }
 
         return null;
+    }
+
+    @SuppressWarnings({ "unused", "unchecked" })
+    private Map<String, String> getAuthCookies() throws Exception {
+        if(memcacheService.contains(MTURK_AUTH_COOKIES)) {
+            return (Map<String, String>) memcacheService.get(MTURK_AUTH_COOKIES);
+        }
+
+        //1.begin request
+        HttpURLConnection beginConnection = createDefaultConnection("https://www.mturk.com/mturk/beginsignin");
+        beginConnection.setInstanceFollowRedirects(false);
+        beginConnection.connect();
+
+        String referer = beginConnection.getHeaderField("Location");
+        //2.signin request
+        HttpURLConnection signinConnection = createDefaultConnection(referer);
+        signinConnection.setDoInput(true);
+        signinConnection.setInstanceFollowRedirects(false);
+        signinConnection.addRequestProperty("Referer", "https://www.mturk.com/mturk/findhits?match=false");
+        signinConnection.connect();
+
+        Document doc = Jsoup.parse(signinConnection.getInputStream(), "UTF-8", signinConnection.getURL().toString());
+        FormElement signinForm = (FormElement) doc.getElementById("ap_signin_form");
+        if(signinForm == null) {//because CAPATCHA
+            return null;
+        }
+        Map<String, String> signinFormParms = new HashMap<String, String>();
+        Elements elements = signinForm.select("input[type=hidden]");
+        for (Iterator<Element> iterator = elements.iterator(); iterator.hasNext();) {
+            Element element = iterator.next();
+            signinFormParms.put(element.attr("name"), element.val());
+        }
+        signinFormParms.put("email", getProperty("email"));
+        signinFormParms.put("password", getProperty("password"));
+
+        //3.submit request
+        HttpURLConnection submitConnection = createDefaultConnection(signinForm.attr("action"));
+        submitConnection.setDoOutput(true);
+        submitConnection.setRequestProperty("Cookie", getCookiesString(readCookies(signinConnection)));
+        submitConnection.addRequestProperty("Referer", referer);
+        submitConnection.setInstanceFollowRedirects(false);
+        submitConnection.connect();
+
+        OutputStream os = null;
+        BufferedWriter writer = null;
+        try {
+            os = submitConnection.getOutputStream();
+            writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+            writer.write(getPostDataString(signinFormParms));
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+            throw new RuntimeException(e);
+        } finally{
+            IOUtils.closeQuietly(os);
+            IOUtils.closeQuietly(writer);
+        }
+
+        //4.return request
+        HttpURLConnection returnConnection = createDefaultConnection(submitConnection.getHeaderField("Location"));
+        returnConnection.setRequestProperty("Cookie", getCookiesString(readCookies(beginConnection)));
+        returnConnection.addRequestProperty("Referer", referer);
+        returnConnection.setInstanceFollowRedirects(false);
+        returnConnection.connect();
+
+        //5.endsignin request
+        HttpURLConnection endsigninConnection = createDefaultConnection(returnConnection.getHeaderField("Location"));
+        Map<String, String> endCookies = new HashMap<String, String>();
+        endCookies.putAll(readCookies(beginConnection));
+        endCookies.putAll(readCookies(returnConnection));
+        endsigninConnection.setRequestProperty("Cookie", getCookiesString(endCookies));
+        endsigninConnection.setInstanceFollowRedirects(false);
+        endsigninConnection.addRequestProperty("Referer", referer);
+        endsigninConnection.connect();
+        endCookies.putAll(readCookies(endsigninConnection));
+
+        //6.checksignin request
+        HttpURLConnection checksigninConnection = createDefaultConnection(endsigninConnection.getHeaderField("Location"));
+        checksigninConnection.setRequestProperty("Cookie", getCookiesString(endCookies));
+        endsigninConnection.addRequestProperty("Referer", referer);
+        checksigninConnection.connect();
+
+        memcacheService.put(MTURK_AUTH_COOKIES, endCookies);
+        return endCookies;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private String getProperty(String id) {
+        Map<String, String> properties;
+        if(memcacheService.contains(MTURK_AUTH_CREDENTIALS)) {
+            properties = (Map<String, String>) memcacheService.get(MTURK_AUTH_CREDENTIALS);
+            return properties.get(id);
+        } else {
+            InputStream is = null;
+            Properties prop = new Properties();
+            try {
+                is = PullLatestTasks.class.getClassLoader().getResourceAsStream("mturk-credentials.properties");
+                prop.load(is);
+                properties = new HashMap<String, String>((Map) prop);
+                memcacheService.put(MTURK_AUTH_CREDENTIALS, properties);
+                return properties.get(id);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, e.getMessage(), e);
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+            return null;
+        }
+    }
+
+    private HttpURLConnection createDefaultConnection(String url) throws Exception {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setConnectTimeout(60*1000);
+
+        connection.setRequestProperty("User-Agent", USERAGENT);
+        connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        connection.setRequestProperty("Connection", "keep-alive");
+        connection.setRequestProperty("Accept-Language", "en-US,en;q=0.8");
+
+        connection.setRequestProperty("Cache-Control", "no-cache");
+        connection.setRequestProperty("Pragma", "no-cache");
+        return connection;
+    }
+
+    private Map<String, String> readCookies(HttpURLConnection connection) {
+        Map<String, String> cookies = new HashMap<String, String>();
+        Map<String, List<String>> headerFields = connection.getHeaderFields();
+
+        Set<String> headerFieldsSet = headerFields.keySet();
+        Iterator<String> headerFieldsIter = headerFieldsSet.iterator();
+
+        while (headerFieldsIter.hasNext()) {
+            String headerFieldKey = headerFieldsIter.next();
+            if ("Set-Cookie".equalsIgnoreCase(headerFieldKey)) {
+                List<String> headerFieldValue = headerFields.get(headerFieldKey);
+                for (String headerValue : headerFieldValue) {
+                    String[] fields = headerValue.split(";\\s*");
+                    String cookieValue = fields[0];
+                    if (cookieValue.indexOf('=') > 0) {
+                        String[] f = fields[0].split("=");
+                        cookies.put(f[0], f[1]);
+                    }
+                }
+            }
+        }
+        return cookies;
+    }
+
+    private String getPostDataString(Map<String, String> params) throws UnsupportedEncodingException{
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for(Map.Entry<String, String> entry : params.entrySet()){
+            if (first) {
+                first = false;
+            } else {
+                result.append("&");
+            }
+
+            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+        }
+
+        return result.toString();
+    }
+
+    private String getCookiesString(Map<String, String> params) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for(Map.Entry<String, String> entry : params.entrySet()){
+            if (first) {
+                first = false;
+            } else {
+                result.append("; ");
+            }
+            result.append(entry.getKey());
+            result.append("=");
+            result.append(entry.getValue());
+        }
+
+        return result.toString();
     }
 }

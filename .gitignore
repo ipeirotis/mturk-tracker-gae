@@ -18,3 +18,5 @@ local_db.bin
 .classpath
 .project
 .settings/ 
+
+mturk-credentials.properties
