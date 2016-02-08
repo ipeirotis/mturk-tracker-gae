@@ -17,6 +17,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceException;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.tracker.entity.ArrivalCompletions;
 import com.tracker.util.SafeDateFormat;
@@ -60,7 +61,10 @@ public class ArrivalCompletionsEndpoint {
             list = ofy().load().type(ArrivalCompletions.class)
                     .filter("from >=", dateFrom.getTime())
                     .filter("from <=", dateTo.getTime()).list();
-            memcacheService.put(memcacheKey, list);
+            try {
+                memcacheService.put(memcacheKey, list);
+            } catch (MemcacheServiceException e) {
+            }
         }
 
         if (list != null) {
