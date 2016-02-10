@@ -35,9 +35,14 @@
     <description>scheduleStatComputation</description>
     <schedule>every day 3:05</schedule>
   </cron>
-    <cron>
+  <cron>
     <url>/scheduleStatComputation?duration=60&amp;date=3</url>
     <description>scheduleStatComputation</description>
     <schedule>every day 3:10</schedule>
+  </cron>
+  <cron>
+    <url>/scheduleExportToBigQuery</url>
+    <description>scheduleExportToBigQuery</description>
+    <schedule>every day 4:00</schedule>
   </cron>
 </cronentries>

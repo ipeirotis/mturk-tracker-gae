@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -15,13 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.googlecode.objectify.cmd.Query;
 import com.tracker.entity.HITrequester;
+import com.tracker.util.TaskUtil;
 
 @SuppressWarnings("serial")
 public class ScheduleTopRequestersComputation extends HttpServlet {
@@ -42,20 +40,12 @@ public class ScheduleTopRequestersComputation extends HttpServlet {
 
         List<HITrequester> requesters = getRequesters(cal);
         for (HITrequester requester : requesters) {
-            schedule(requester.getRequesterId(), requester.getRequesterName(), cal.getTimeInMillis());
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("requesterId", requester.getRequesterId());
+            params.put("requesterName", requester.getRequesterName());
+            params.put("from", String.valueOf(cal.getTimeInMillis()));
+            TaskUtil.queueTask("/computeTopRequesters", params);
         }
-    }
-
-    private void schedule(String requesterId, String requesterName, long from) {
-        Queue queue = QueueFactory.getDefaultQueue();
-        queue.add(Builder
-            .withUrl("/computeTopRequesters")
-            .param("requesterId", requesterId)
-            .param("requesterName", requesterName)
-            .param("from", String.valueOf(from))
-            .etaMillis(System.currentTimeMillis())
-            .retryOptions(RetryOptions.Builder.withTaskRetryLimit(0))
-            .method(TaskOptions.Method.GET));
     }
     
     public List<HITrequester> getRequesters(Calendar cal) {

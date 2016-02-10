@@ -103,6 +103,24 @@
 		<servlet-name>TrackHITs</servlet-name>
 		<url-pattern>/trackHits</url-pattern>
 	</servlet-mapping>
+
+    <servlet>
+        <servlet-name>ScheduleExportToBigQuery</servlet-name>
+        <servlet-class>com.tracker.servlet.schedule.ScheduleExportToBigQuery</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ScheduleExportToBigQuery</servlet-name>
+        <url-pattern>/scheduleExportToBigQuery</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ExportToBigQuery</servlet-name>
+        <servlet-class>com.tracker.servlet.task.ExportToBigQuery</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ExportToBigQuery</servlet-name>
+        <url-pattern>/exportToBigQuery</url-pattern>
+    </servlet-mapping>
 	
 	<filter>
 		<filter-name>ObjectifyFilter</filter-name>

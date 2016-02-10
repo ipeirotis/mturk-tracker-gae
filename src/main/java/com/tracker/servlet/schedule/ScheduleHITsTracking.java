@@ -3,19 +3,17 @@ package com.tracker.servlet.schedule;
 import static com.tracker.ofy.OfyService.ofy;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
 import com.googlecode.objectify.Key;
 import com.tracker.entity.HITgroup;
+import com.tracker.util.TaskUtil;
 
 @SuppressWarnings("serial")
 public class ScheduleHITsTracking extends HttpServlet {
@@ -28,18 +26,10 @@ public class ScheduleHITsTracking extends HttpServlet {
     // Get the list of all HITgroups that are active.
     Iterable<Key<HITgroup>> groups = ofy().load().type(HITgroup.class).filter("active", true).keys();
     for (Key<HITgroup> group : groups) {
-      schedule(group.getRaw().getName());
+      Map<String, String> params = new HashMap<String, String>();
+      params.put("groupId", group.getRaw().getName());
+      TaskUtil.queueTask("/trackHits", "trackHITs1", params);
     }
-  }
-
-  private void schedule(String groupId) {
-    Queue queue = QueueFactory.getQueue("trackHITs1");
-    queue.add(Builder
-        .withUrl("/trackHits")
-        .param("groupId", groupId)
-        .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(0))
-        .method(TaskOptions.Method.GET));
   }
 
 }

@@ -3,16 +3,14 @@ package com.tracker.servlet.schedule;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.RetryOptions;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Builder;
+import com.tracker.util.TaskUtil;
 
 @SuppressWarnings("serial")
 public class ScheduleStatComputation extends HttpServlet {
@@ -35,21 +33,13 @@ public class ScheduleStatComputation extends HttpServlet {
 	    cal.set(Calendar.SECOND, 0);
 	    cal.set(Calendar.MILLISECOND, 0);
 	    cal.add(Calendar.DATE, -date);
-	    for(long t = cal.getTimeInMillis(); t<cal.getTimeInMillis() + DAY_IN_MILLIS; t+=duration*MIN_IN_MILLIS){
-		    scheduleTask(duration_param, t, t + duration*MIN_IN_MILLIS);
+	    for(long t = cal.getTimeInMillis(); t<cal.getTimeInMillis() + DAY_IN_MILLIS; t+=duration*MIN_IN_MILLIS) {	    
+	        Map<String, String> params = new HashMap<String, String>();
+	        params.put("diff", duration_param);
+	        params.put("from", String.valueOf(t));
+	        params.put("to", String.valueOf(t + duration*MIN_IN_MILLIS));
+	        TaskUtil.queueTask("/computeArrivalCompletions", params);
 	    }
-	}
-	
-	private void scheduleTask(String duration, long from, long to){
-	    Queue queue = QueueFactory.getDefaultQueue();
-	    queue.add(Builder
-        .withUrl("/computeArrivalCompletions")
-        .param("diff", duration)
-	    .param("from", String.valueOf(from))
-	    .param("to", String.valueOf(to))
-        .etaMillis(System.currentTimeMillis())
-        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(1))
-        .method(TaskOptions.Method.GET));
 	}
 
 }
