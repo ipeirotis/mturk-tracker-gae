@@ -45,4 +45,9 @@
     <description>scheduleExportToBigQuery</description>
     <schedule>every day 4:00</schedule>
   </cron>
+  <cron>
+    <url>/computeActiveRequesters</url>
+    <description>Compute active requesters</description>
+    <schedule>every 1 hours</schedule>
+  </cron>
 </cronentries>

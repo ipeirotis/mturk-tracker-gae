@@ -6,5 +6,6 @@ angular.module('mturk').constant('views', {
     hitDetails: 'views/hitDetails.html',
     requesterDetails: 'views/requesterDetails.html',
     topRequesters: 'views/toprequesters.html',
+    activeRequesters: 'views/activerequesters.html',
     search: 'views/search.html'
 });

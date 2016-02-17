@@ -31,6 +31,7 @@ public class ArrivalCompletions implements Serializable{
 	private Long rewardsArrived;
 	private Long rewardsCompleted;
 	private Integer length;
+	private Long activeRequesters;
 
 	public ArrivalCompletions(Date from, Date to) {
 		this.from = from;
@@ -139,5 +140,13 @@ public class ArrivalCompletions implements Serializable{
 	public void setLength(Integer length) {
 		this.length = length;
 	}
+
+    public Long getActiveRequesters() {
+        return activeRequesters;
+    }
+
+    public void setActiveRequesters(Long activeRequesters) {
+        this.activeRequesters = activeRequesters;
+    }
 
 }

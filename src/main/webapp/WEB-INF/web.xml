@@ -121,7 +121,16 @@
         <servlet-name>ExportToBigQuery</servlet-name>
         <url-pattern>/exportToBigQuery</url-pattern>
     </servlet-mapping>
-	
+
+    <servlet>
+        <servlet-name>ComputeActiveRequesters</servlet-name>
+        <servlet-class>com.tracker.servlet.task.ComputeActiveRequesters</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ComputeActiveRequesters</servlet-name>
+        <url-pattern>/computeActiveRequesters</url-pattern>
+    </servlet-mapping>
+
 	<filter>
 		<filter-name>ObjectifyFilter</filter-name>
 		<filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
