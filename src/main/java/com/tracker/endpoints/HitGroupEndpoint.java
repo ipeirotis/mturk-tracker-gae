@@ -20,11 +20,14 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiMethod.HttpMethod;
 import com.google.api.server.spi.config.Nullable;
+import com.google.api.server.spi.response.CollectionResponse;
+import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.Query;
 import com.google.appengine.api.search.QueryOptions;
+import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.tracker.entity.HITgroup;
@@ -62,14 +65,15 @@ public class HitGroupEndpoint {
 	}
 
 	@ApiMethod(name = "hitgroup.search", path = "hitgroup/search", httpMethod = HttpMethod.GET)
-	public List<Map<String, String>> search(
+	public CollectionResponse<Map<String, String>> search(
 	        @Nullable @Named("all") String all,
 	        @Nullable @Named("requesterName") String requesterName,
 	        @Nullable @Named("title") String title,
 	        @Nullable @Named("description") String description,
 	        @Nullable @Named("hitContent") String hitContent,
 	        @Nullable @Named("keyword") String keyword,
-	        @Nullable @Named("qualification") String qualification) {
+	        @Nullable @Named("qualification") String qualification,
+	        @Nullable @Named("cursor") String strCursor) {
 
 	    List<String> params = new ArrayList<String>();
 	    String queryString;
@@ -102,11 +106,14 @@ public class HitGroupEndpoint {
 
 	    IndexSpec indexSpec = IndexSpec.newBuilder().setName("hit_group_index").build();
 	    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
+	    Cursor cursor = Cursor.newBuilder().build(strCursor);
 	    QueryOptions options = QueryOptions.newBuilder()
 	            .setFieldsToReturn("requesterId", "requesterName", "title", "description", "keywords", "reward", "timeAllotted")
-	            .setLimit(1000).build();
+	            .setLimit(1000).setCursor(cursor).build();
 	    Query query = Query.newBuilder().setOptions(options).build(queryString);
-	    Collection<ScoredDocument> docs = index.search(query).getResults();
+	    Results<ScoredDocument> results = index.search(query);
+	    Cursor nextCursor = results.getCursor();
+	    Collection<ScoredDocument> docs = results.getResults();
 	    
 	    List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 	    
@@ -119,6 +126,7 @@ public class HitGroupEndpoint {
 	        result.add(fields);
 	    }
 
-	    return result;
+	    return CollectionResponse.<Map<String, String>> builder().setItems(result)
+	            .setNextPageToken(nextCursor.toWebSafeString()).build();
 	}
 }

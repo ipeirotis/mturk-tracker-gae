@@ -185,8 +185,9 @@ public class PullLatestTasks extends HttpServlet {
                 //check existing HITgroup
                 HITgroup existingGroup = ofy().load().type(HITgroup.class).id(groupId).now();
                 if (existingGroup != null) {
-                    // If we already have a HITgroup, we just update the lastSeen page
+                    // If we already have a HITgroup, we just update the lastSeen page and qualifications
                     existingGroup.setLastSeen(now);
+                    existingGroup.setQualificationsRequired(getQualifications(qualificationElement));
 
                     // If the group was inactive, we revive it and create a new HITinstance
                     if (existingGroup.isActive() == false) {
@@ -214,12 +215,17 @@ public class PullLatestTasks extends HttpServlet {
                 //qualifications
                 List<String> qualifications = getQualifications(qualificationElement);
 
-                String content = loadHitContent(groupId);
+                Document preview = loadPreviewDocument(groupId);
+                String content = getHitContent(preview);
+
+                Element hitAutoAppDelayInSecondsElement = preview.getElementById("hitAutoAppDelayInSeconds");
+                Integer hitAutoAppDelayInSeconds = hitAutoAppDelayInSecondsElement == null ?
+                        null : Integer.valueOf(hitAutoAppDelayInSecondsElement.val());
 
                 //create new HITgroup
                 HITgroup hitGroup = new HITgroup(groupId, requesterId, title,
                         description, keywords, expirationDate, rewardValue,
-                        parseTime(timeAlloted), qualifications, now, now);
+                        parseTime(timeAlloted), qualifications, hitAutoAppDelayInSeconds, now, now);
                 hitGroups.add(hitGroup);
 
             //create new HITrequester if HIT group is not exists,
@@ -325,7 +331,7 @@ public class PullLatestTasks extends HttpServlet {
                 qualifications.add(qElement.text());
             }*/
             for (Element qElement : qValues) {
-                qualifications.add(qElement.text());
+                qualifications.add(qElement.child(0).text());
             }
         }
         return qualifications;
@@ -345,11 +351,12 @@ public class PullLatestTasks extends HttpServlet {
         return statistics;
     }
 
-    private String loadHitContent(String groupId) {
-        try {
-            Document preview;
-            preview = Jsoup.connect(PREVIEW_URL + groupId).timeout(30000).get();
+    private Document loadPreviewDocument(String groupId) throws IOException {
+        return Jsoup.connect(PREVIEW_URL + groupId).timeout(30000).get();
+    }
 
+    private String getHitContent(Document preview) {
+        try {
             Element internalContentElement = preview.getElementById("hit-wrapper");
             if (internalContentElement != null) {
                 return internalContentElement.html();

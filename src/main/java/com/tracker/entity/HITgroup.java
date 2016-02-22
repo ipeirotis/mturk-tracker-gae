@@ -24,6 +24,7 @@ public class HITgroup {
   private Integer reward; //Price in cents
   private Integer timeAlloted; //Time in seconds
   private List<String> qualificationsRequired;
+  private Integer hitAutoAppDelayInSeconds;
   @Index
   private Date firstSeen;
   @Index
@@ -33,8 +34,8 @@ public class HITgroup {
   
   public HITgroup(String groupId, String requesterId, String title,
       String description, List<String> keywords, Date expirationDate,
-      Integer reward, Integer timeAlloted, List<String> qualificationsRequired, 
-      Date firstSeen, Date lastSeen) {
+      Integer reward, Integer timeAlloted, List<String> qualificationsRequired,
+      Integer hitAutoAppDelayInSeconds, Date firstSeen, Date lastSeen) {
     this.groupId = groupId;
     this.requesterId = requesterId;
     this.title = title;
@@ -44,6 +45,7 @@ public class HITgroup {
     this.reward = reward;
     this.timeAlloted = timeAlloted;
     this.qualificationsRequired = qualificationsRequired;
+    this.hitAutoAppDelayInSeconds = hitAutoAppDelayInSeconds;
     this.firstSeen = firstSeen;
     this.lastSeen = lastSeen;
   }
@@ -123,7 +125,14 @@ public class HITgroup {
   public void setQualificationsRequired(List<String> qualificationsRequired) {
     this.qualificationsRequired = qualificationsRequired;
   }
-  
+
+  public Integer getHitAutoAppDelayInSeconds() {
+    return hitAutoAppDelayInSeconds;
+  }
+
+  public void setHitAutoAppDelayInSeconds(Integer hitAutoAppDelayInSeconds) {
+    this.hitAutoAppDelayInSeconds = hitAutoAppDelayInSeconds;
+  }
   public Date getFirstSeen() {
     return firstSeen;
   }
