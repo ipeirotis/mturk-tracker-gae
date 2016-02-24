@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,8 @@ import com.tracker.util.SafeDateFormat;
 
 @SuppressWarnings("serial")
 public class ComputeActiveRequesters extends HttpServlet {
+
+  private static final Logger logger = Logger.getLogger(ComputeActiveRequesters.class.getName());
 
   private static final String APPLICATION_ID = SystemProperty.applicationId.get();
   private static final String BUCKET = "entities";
@@ -58,16 +61,19 @@ public class ComputeActiveRequesters extends HttpServlet {
       .build();
 
     BigQueryService bigQueryService = new BigQueryService(bigquery, APPLICATION_ID, BUCKET);
-    QueryResult queryResult = bigQueryService.executeQuery(
-            String.format("SELECT requesterId, COUNT(*) AS cnt "
-            + "FROM [entities.HITgroup] WHERE firstSeen<%s AND lastSeen>%s GROUP BY requesterId",
-            dateFormat.format(dateFrom), dateFormat.format(dateTo)));
+
+    String query = String.format("SELECT requesterId, COUNT(*) AS cnt "
+            + "FROM [entities.HITgroup] WHERE firstSeen<'%s' AND lastSeen>'%s' GROUP BY requesterId",
+            dateFormat.format(dateFrom.getTime()), dateFormat.format(dateTo.getTime()));
+
+    QueryResult queryResult = bigQueryService.executeQuery(query);
+    logger.info(String.format("%d rows fetched", queryResult.getData().size()));
 
     long count = 0;
     for(List<Object> row : queryResult.getData()){
         count += (Long)row.get(1);
     }
-    
+
     if(count > 0) {
         ArrivalCompletions arrivalCompletions = ofy().load().type(ArrivalCompletions.class)
         .filter("from", dateFrom.getTime()).filter("to", dateTo.getTime()).limit(1).first().now();

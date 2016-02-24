@@ -83,7 +83,7 @@ public class ExportToBigQuery extends HttpServlet {
 
       if("ArrivalCompletions".equals(kind)) {
           exportArrivalCompletions(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
-      } else if("HITGroup".equals(kind)) {
+      } else if("HITgroup".equals(kind)) {
           exportHITGroups(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
       } else if("HITinstance".equals(kind)) {
           exportHITinstances(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
@@ -183,7 +183,7 @@ public class ExportToBigQuery extends HttpServlet {
           List<HITgroup> list = hitGroupsResult.getItems();
           
           List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
+
           if(list.size() > 0) {
               for(HITgroup hg : list) {
                   Map<String, Object> data = new LinkedHashMap<String, Object>();
@@ -191,7 +191,6 @@ public class ExportToBigQuery extends HttpServlet {
                   data.put("requesterId", hg.getRequesterId());
                   data.put("title", hg.getTitle());
                   data.put("description", hg.getDescription());
-                  data.put("qualificationsRequired", hg.getQualificationsRequired());
                   data.put("expirationDate", formatDate(hg.getExpirationDate()));
                   data.put("reward", hg.getReward());
                   data.put("timeAlloted", hg.getTimeAlloted());
@@ -200,7 +199,7 @@ public class ExportToBigQuery extends HttpServlet {
                   data.put("active", hg.isActive());
     
                   listToSave.add(data);
-              } 
+              }
               bigQueryService.insert(kind, listToSave);
           }
 

@@ -31,7 +31,7 @@ angular.module('mturk').controller('ActiveRequestersController',
       $scope.load = function() {
           dataService.load($filter('date')($scope.from, 'MM/dd/yyyy'), $filter('date')($scope.to, 'MM/dd/yyyy'), function(response){
               var rows = [];
-              angular.forEach(response.items, function(item) {
+              angular.forEach(response.hourly, function(item) {
                   rows.push({c:[{v: new Date(item.from)}, {v: parseInt(item.activeRequesters)}]});
               });
               
