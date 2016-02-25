@@ -106,10 +106,14 @@ public class HitGroupEndpoint {
 
 	    IndexSpec indexSpec = IndexSpec.newBuilder().setName("hit_group_index").build();
 	    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-	    Cursor cursor = Cursor.newBuilder().build(strCursor);
-	    QueryOptions options = QueryOptions.newBuilder()
-	            .setFieldsToReturn("requesterId", "requesterName", "title", "description", "keywords", "reward", "timeAllotted")
-	            .setLimit(1000).setCursor(cursor).build();
+	    com.google.appengine.api.search.QueryOptions.Builder builder = QueryOptions.newBuilder();
+	    builder.setFieldsToReturn("requesterId", "requesterName", "title", "description", "keywords", "reward", "timeAllotted")
+	        .setLimit(1000).build();
+	    if(strCursor != null) {
+	        Cursor cursor = Cursor.newBuilder().build(strCursor);
+	        builder.setCursor(cursor);
+	    }
+	    QueryOptions options = builder.build();
 	    Query query = Query.newBuilder().setOptions(options).build(queryString);
 	    Results<ScoredDocument> results = index.search(query);
 	    Cursor nextCursor = results.getCursor();
@@ -126,7 +130,11 @@ public class HitGroupEndpoint {
 	        result.add(fields);
 	    }
 
-	    return CollectionResponse.<Map<String, String>> builder().setItems(result)
-	            .setNextPageToken(nextCursor.toWebSafeString()).build();
+	    CollectionResponse.Builder<Map<String, String>> responseBuilder = CollectionResponse.<Map<String, String>> builder();
+	    responseBuilder.setItems(result);
+	    if(nextCursor != null) {
+	        responseBuilder.setNextPageToken(nextCursor.toWebSafeString());
+	    }
+	    return responseBuilder.build();
 	}
 }
