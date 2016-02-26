@@ -45,7 +45,6 @@ public class ComputeActiveRequesters extends HttpServlet {
 
     Calendar dateFrom = Calendar.getInstance();
     dateFrom.setTime(new Date());
-    dateFrom.set(Calendar.HOUR_OF_DAY, 0);
     dateFrom.set(Calendar.MINUTE, 0);
     dateFrom.set(Calendar.SECOND, 0);
     dateFrom.set(Calendar.MILLISECOND, 0);
@@ -71,7 +70,7 @@ public class ComputeActiveRequesters extends HttpServlet {
 
     long count = 0;
     for(List<Object> row : queryResult.getData()){
-        count += (Long)row.get(1);
+        count += Long.parseLong((String)row.get(1));
     }
 
     if(count > 0) {
