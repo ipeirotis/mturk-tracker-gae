@@ -67,15 +67,15 @@ public class ComputeActiveRequesters extends HttpServlet {
                 .filter("from >=", dateFrom.getTime()).filter("from <", dateTo.getTime()).list();
 
         for(ArrivalCompletions ac :list) {
-            String query = String.format("SELECT requesterId, COUNT(*) AS cnt "
-                    + "FROM [entities.HITgroup] WHERE firstSeen<'%s' AND lastSeen>'%s' GROUP BY requesterId",
+            String query = String.format("SELECT COUNT(*) FROM (SELECT requesterId FROM [entities.HITgroup] "
+                    + "WHERE firstSeen<'%s' AND lastSeen>'%s' GROUP BY requesterId)",
                     dateFormat.format(ac.getFrom()), dateFormat.format(ac.getTo()));
 
             QueryResult queryResult = bigQueryService.executeQuery(query);
 
             long count = 0;
             for(List<Object> row : queryResult.getData()){
-                count += Long.parseLong((String)row.get(1));
+                count += Long.parseLong((String)row.get(0));
             }
 
             if(count > 0) {
