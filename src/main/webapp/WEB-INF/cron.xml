@@ -48,6 +48,6 @@
   <cron>
     <url>/computeActiveRequesters</url>
     <description>Compute active requesters</description>
-    <schedule>every 1 hours</schedule>
+    <schedule>every day 5:00</schedule>
   </cron>
 </cronentries>
