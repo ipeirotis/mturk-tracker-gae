@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -41,58 +42,75 @@ import com.tracker.entity.TopRequester;
 import com.tracker.ofy.ListByCursorResult;
 import com.tracker.ofy.OfyService;
 import com.tracker.util.SafeDateFormat;
+import com.tracker.util.TaskUtil;
 
 @SuppressWarnings("serial")
 public class ExportToBigQuery extends HttpServlet {
-  @SuppressWarnings("unused")
+
   private static final Logger logger = Logger.getLogger(ExportToBigQuery.class.getName());
   
   private static final String APPLICATION_ID = SystemProperty.applicationId.get();
   private static final String BUCKET = "entities";
-  private static final DateFormat dateFormat = SafeDateFormat.forPattern("yyyy-MM-dd HH:mm:ss"); 
+  private static final DateFormat dateFormat = SafeDateFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+  private static final int DEADLINE = 8*60*1000;//8 min
 
   private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
   private static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-      Calendar dateFrom = Calendar.getInstance();
-      dateFrom.setTime(new Date());
-      dateFrom.set(Calendar.HOUR_OF_DAY, 0);
-      dateFrom.set(Calendar.MINUTE, 0);
-      dateFrom.set(Calendar.SECOND, 0);
-      dateFrom.set(Calendar.MILLISECOND, 0);
-      dateFrom.add(Calendar.DAY_OF_MONTH, -1);
+      String kind = req.getParameter("kind");
+      String cursor = req.getParameter("cursor");
 
-      Calendar dateTo = Calendar.getInstance();
-      dateTo.setTime(dateFrom.getTime());
-      dateTo.set(Calendar.HOUR_OF_DAY, 23);
-      dateTo.set(Calendar.MINUTE, 59);
-      dateTo.set(Calendar.SECOND, 59);
-      dateTo.set(Calendar.SECOND, 59);
-      dateTo.set(Calendar.MILLISECOND, 999);
+      Calendar calFrom = Calendar.getInstance();
+      calFrom.setTime(new Date());
+      calFrom.set(Calendar.HOUR_OF_DAY, 0);
+      calFrom.set(Calendar.MINUTE, 0);
+      calFrom.set(Calendar.SECOND, 0);
+      calFrom.set(Calendar.MILLISECOND, 0);
+      calFrom.add(Calendar.DAY_OF_MONTH, -1);
+
+      Calendar calTo = Calendar.getInstance();
+      calTo.setTime(calFrom.getTime());
+      calTo.add(Calendar.DAY_OF_MONTH, 1);
+
+      Date dateFrom = calFrom.getTime();
+      Date dateTo = calTo.getTime();
 
       AppIdentityCredential appIdentityCredential = new AppIdentityCredential(Collections.singleton(BigqueryScopes.BIGQUERY));
       Bigquery bigquery = new Bigquery.Builder(HTTP_TRANSPORT, JSON_FACTORY, appIdentityCredential)
           .setApplicationName(APPLICATION_ID)
           .build();
 
-      String kind = req.getParameter("kind");
       BigQueryService bigQueryService = new BigQueryService(bigquery, APPLICATION_ID, BUCKET);
       ensureTableExists(kind, bigQueryService);
 
+      Map<String, Object> params = new HashMap<String, Object>();
+
       if("ArrivalCompletions".equals(kind)) {
-          exportArrivalCompletions(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("from >=", dateFrom.getTime());
+          params.put("from <", dateTo.getTime());
+          export(ArrivalCompletions.class, bigQueryService, params, cursor);
       } else if("HITgroup".equals(kind)) {
-          exportHITGroups(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("lastSeen >=", dateFrom);
+          params.put("lastSeen <", dateTo);
+          export(HITgroup.class, bigQueryService, params, cursor);
       } else if("HITinstance".equals(kind)) {
-          exportHITinstances(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("timestamp >=", dateFrom);
+          params.put("timestamp <", dateTo);
+          export(HITinstance.class, bigQueryService, params, cursor);
       } else if("HITrequester".equals(kind)) {
-          exportHITrequesters(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("lastActivity >=", dateFrom);
+          params.put("lastActivity <", dateTo);
+          export(HITrequester.class, bigQueryService, params, cursor);
       } else if("MarketStatistics".equals(kind)) {
-          exportMarketStatistics(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("timestamp >=", dateFrom);
+          params.put("timestamp <", dateTo);
+          export(MarketStatistics.class, bigQueryService, params, cursor);
       } else if("TopRequester".equals(kind)) {
-          exportTopRequesters(kind, bigQueryService, dateFrom.getTime(), dateTo.getTime());
+          params.put("timestamp >=", dateFrom);
+          params.put("timestamp <", dateTo);
+          export(TopRequester.class, bigQueryService, params, cursor);
       }
   }
 
@@ -122,244 +140,203 @@ public class ExportToBigQuery extends HttpServlet {
           } catch (Exception e) {
               throw new RuntimeException(e);
           }
-          
+
           bigQueryService.createTable(kind, columns);
       }
   }
 
-  private void exportArrivalCompletions(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<ArrivalCompletions> arrivalCompletionsResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("from >=", from);
-      params.put("from <", to);
-
-      while(true) {
-          arrivalCompletionsResult = listByCursor(params,
-                  arrivalCompletionsResult == null ? null : arrivalCompletionsResult.getNextPageToken(), ArrivalCompletions.class);
-
-          List<ArrivalCompletions> list = arrivalCompletionsResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
-          if(list.size() > 0) {
-              for(ArrivalCompletions ac : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("id", ac.getId());
-                  data.put("from", formatDate(ac.getFrom()));
-                  data.put("to", formatDate(ac.getTo()));
-                  data.put("hitGroupsAvailableUI", ac.getHitGroupsAvailableUI());
-                  data.put("hitGroupsArrived", ac.getHitGroupsArrived());
-                  data.put("hitGroupsCompleted", ac.getHitGroupsCompleted());
-                  data.put("hitsAvailableUI", ac.getHitGroupsAvailableUI());
-                  data.put("hitsArrived", ac.getHitsArrived());
-                  data.put("hitsCompleted", ac.getHitsCompleted());
-                  data.put("rewardsArrived", ac.getRewardsArrived());
-                  data.put("rewardsCompleted", ac.getRewardsCompleted());
-                  data.put("length", ac.getLength());
-    
-                  listToSave.add(data);
-              } 
-              bigQueryService.insert(kind, listToSave);
-          }
-
-          OfyService.ofy().clear();
-
-          if(arrivalCompletionsResult.getNextPageToken() == null) {
-              break;
-          }
+  @SuppressWarnings("unchecked")
+  private <T> void export(Class<T> clazz, BigQueryService bigQueryService, Map<String, Object> params, String cursor) {
+      String kind = clazz.getSimpleName();
+      ListByCursorResult<T> result = null;
+      if(cursor != null) {
+          result = new ListByCursorResult<T>();
+          result.setNextPageToken(cursor);
       }
-  }
-
-  private void exportHITGroups(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<HITgroup> hitGroupsResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("lastSeen >=", from);
-      params.put("lastSeen <", to);
+      long start = System.currentTimeMillis();
+      long counter = 0;
 
       while(true) {
-          hitGroupsResult = listByCursor(params,
-                  hitGroupsResult == null ? null : hitGroupsResult.getNextPageToken(), HITgroup.class);
+          long duration = System.currentTimeMillis() - start;
 
-          List<HITgroup> list = hitGroupsResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
+          if(duration < DEADLINE) {
+              result = listByCursor(params, result == null ? null : result.getNextPageToken(), clazz);
 
-          if(list.size() > 0) {
-              for(HITgroup hg : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("groupId", hg.getGroupId());
-                  data.put("requesterId", hg.getRequesterId());
-                  data.put("title", hg.getTitle());
-                  data.put("description", hg.getDescription());
-                  data.put("expirationDate", formatDate(hg.getExpirationDate()));
-                  data.put("reward", hg.getReward());
-                  data.put("timeAlloted", hg.getTimeAlloted());
-                  data.put("firstSeen", formatDate(hg.getFirstSeen()));
-                  data.put("lastSeen", formatDate(hg.getLastSeen()));
-                  data.put("active", hg.isActive());
-    
-                  listToSave.add(data);
+              List<T> list = result.getItems();
+              List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>();
+
+              if(list.size() > 0) {
+                  if("ArrivalCompletions".equals(kind)) {
+                      listToSave = mapArrivalCompletions((List<ArrivalCompletions>)list);
+                  } else if("HITgroup".equals(kind)) {
+                      listToSave = mapHitGroups((List<HITgroup>)list);
+                  } else if("HITinstance".equals(kind)) {
+                      listToSave = mapHitInstances((List<HITinstance>)list);
+                  } else if("HITrequester".equals(kind)) {
+                      listToSave = mapHitRequesters((List<HITrequester>)list);
+                  } else if("MarketStatistics".equals(kind)) {
+                      listToSave = mapMarketStatistics((List<MarketStatistics>)list);
+                  } else if("TopRequester".equals(kind)) {
+                      listToSave = mapTopRequesters((List<TopRequester>)list);
+                  }
+
+                  try {
+                      bigQueryService.insert(kind, listToSave);
+                      counter += listToSave.size();
+                  } catch (IOException e) {
+                      //BigQuery error, schedule from current position
+                      logger.log(Level.WARNING, e.getMessage(), e);
+                      schedule(kind, result.getNextPageToken());
+                      break;
+                  }
               }
-              bigQueryService.insert(kind, listToSave);
-          }
 
-          OfyService.ofy().clear();
+              OfyService.ofy().clear();
 
-          if(hitGroupsResult.getNextPageToken() == null) {
+              if(result.getNextPageToken() == null) {
+                  break;
+              }
+          } else {
+              schedule(kind, result.getNextPageToken());
               break;
           }
       }
+
+      logger.log(Level.INFO, String.format("Exported %d '%s'", counter, kind));
   }
 
-  private void exportHITinstances(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<HITinstance> hitInstanceResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("timestamp >=", from);
-      params.put("timestamp <", to);
+  private <T> void schedule(String kind, String nextPageToken) {
+      Map<String, String> taskParams = new HashMap<String, String>();
+      taskParams.put("kind", kind);
+      taskParams.put("cursor", nextPageToken);
+      TaskUtil.queueTask("/exportToBigQuery", taskParams);
+  }
 
-      while(true) {
-          hitInstanceResult = listByCursor(params,
-                  hitInstanceResult == null ? null : hitInstanceResult.getNextPageToken(), HITinstance.class);
-
-          List<HITinstance> list = hitInstanceResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
-          if(list.size() > 0) {
-              for(HITinstance hi : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("id", hi.getId());
-                  data.put("groupId", hi.getGroupId());
-                  data.put("timestamp", formatDate(hi.getTimestamp()));
-                  data.put("hitsAvailable", hi.getHitsAvailable());
-                  data.put("hitsDiff", hi.getHitsDiff());
-                  data.put("rewardsAvailable", hi.getRewardsAvailable());
-                  data.put("rewardDiff", hi.getRewardDiff());
-    
-                  listToSave.add(data);
-              } 
-              bigQueryService.insert(kind, listToSave);
-          }
-
-          OfyService.ofy().clear();
-
-          if(hitInstanceResult.getNextPageToken() == null) {
-              break;
-          }
+  private List<Map<String, Object>> mapArrivalCompletions(List<ArrivalCompletions> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(ArrivalCompletions arrivalCompletions : list) {
+          result.add(mapArrivalCompletions(arrivalCompletions));
       }
+      return result;
   }
 
-  private void exportHITrequesters(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<HITrequester> hitRequesterResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("lastActivity >=", from);
-      params.put("lastActivity <", to);
+  private Map<String, Object> mapArrivalCompletions(ArrivalCompletions arrivalCompletions) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("id", arrivalCompletions.getId());
+      result.put("from", formatDate(arrivalCompletions.getFrom()));
+      result.put("to", formatDate(arrivalCompletions.getTo()));
+      result.put("hitGroupsAvailableUI", arrivalCompletions.getHitGroupsAvailableUI());
+      result.put("hitGroupsArrived", arrivalCompletions.getHitGroupsArrived());
+      result.put("hitGroupsCompleted", arrivalCompletions.getHitGroupsCompleted());
+      result.put("hitsAvailableUI", arrivalCompletions.getHitGroupsAvailableUI());
+      result.put("hitsArrived", arrivalCompletions.getHitsArrived());
+      result.put("hitsCompleted", arrivalCompletions.getHitsCompleted());
+      result.put("rewardsArrived", arrivalCompletions.getRewardsArrived());
+      result.put("rewardsCompleted", arrivalCompletions.getRewardsCompleted());
+      result.put("length", arrivalCompletions.getLength());
+      return result;
+  }
 
-      while(true) {
-          hitRequesterResult = listByCursor(params,
-                  hitRequesterResult == null ? null : hitRequesterResult.getNextPageToken(), HITrequester.class);
-
-          List<HITrequester> list = hitRequesterResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
-          if(list.size() > 0) {
-              for(HITrequester hr : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("requesterId", hr.getRequesterId());
-                  data.put("requesterName", hr.getRequesterName());
-                  data.put("lastActivity", formatDate(hr.getLastActivity()));
-
-                  listToSave.add(data);
-              } 
-              bigQueryService.insert(kind, listToSave);
-          }
-
-          OfyService.ofy().clear();
-
-          if(hitRequesterResult.getNextPageToken() == null) {
-              break;
-          }
+  private List<Map<String, Object>> mapHitGroups(List<HITgroup> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(HITgroup hitGroup : list) {
+          result.add(mapHitGroup(hitGroup));
       }
+      return result;
   }
 
-  private void exportMarketStatistics(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<MarketStatistics> marketStatisticsResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("timestamp >=", from);
-      params.put("timestamp <", to);
+  private Map<String, Object> mapHitGroup(HITgroup hitGroup) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("groupId", hitGroup.getGroupId());
+      result.put("requesterId", hitGroup.getRequesterId());
+      result.put("title", hitGroup.getTitle());
+      result.put("description", hitGroup.getDescription());
+      result.put("expirationDate", formatDate(hitGroup.getExpirationDate()));
+      result.put("reward", hitGroup.getReward());
+      result.put("timeAlloted", hitGroup.getTimeAlloted());
+      result.put("firstSeen", formatDate(hitGroup.getFirstSeen()));
+      result.put("lastSeen", formatDate(hitGroup.getLastSeen()));
+      result.put("active", hitGroup.isActive());
+      return result;
+  }
 
-      while(true) {
-          marketStatisticsResult = listByCursor(params,
-                  marketStatisticsResult == null ? null : marketStatisticsResult.getNextPageToken(), MarketStatistics.class);
-
-          List<MarketStatistics> list = marketStatisticsResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
-          if(list.size() > 0) {
-              for(MarketStatistics ms : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("id", ms.getId());
-                  data.put("timestamp", formatDate(ms.getTimestamp()));
-                  data.put("hitGroupsAvailable", ms.getHitGroupsAvailable());
-                  data.put("hitsAvailable", ms.getHitsAvailable());
-
-                  listToSave.add(data);
-              } 
-              bigQueryService.insert(kind, listToSave);
-          }
-
-          OfyService.ofy().clear();
-
-          if(marketStatisticsResult.getNextPageToken() == null) {
-              break;
-          }
+  private List<Map<String, Object>> mapHitInstances(List<HITinstance> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(HITinstance hitInstance : list) {
+          result.add(mapHitInstance(hitInstance));
       }
+      return result;
   }
 
-  private void exportTopRequesters(String kind, BigQueryService bigQueryService, Date from, Date to) {
-      ListByCursorResult<TopRequester> topRequesterResult = null;
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("timestamp >=", from);
-      params.put("timestamp <", to);
+  private Map<String, Object> mapHitInstance(HITinstance hitInstance) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("id", hitInstance.getId());
+      result.put("groupId", hitInstance.getGroupId());
+      result.put("timestamp", formatDate(hitInstance.getTimestamp()));
+      result.put("hitsAvailable", hitInstance.getHitsAvailable());
+      result.put("hitsDiff", hitInstance.getHitsDiff());
+      result.put("rewardsAvailable", hitInstance.getRewardsAvailable());
+      result.put("rewardDiff", hitInstance.getRewardDiff());
+      return result;
+  }
 
-      while(true) {
-          topRequesterResult = listByCursor(params,
-                  topRequesterResult == null ? null : topRequesterResult.getNextPageToken(), TopRequester.class);
-
-          List<TopRequester> list = topRequesterResult.getItems();
-          
-          List<Map<String, Object>> listToSave = new ArrayList<Map<String,Object>>(); 
-          
-          if(list.size() > 0) {
-              for(TopRequester tr : list) {
-                  Map<String, Object> data = new LinkedHashMap<String, Object>();
-                  data.put("id", tr.getId());
-                  data.put("requesterId", tr.getRequesterId());
-                  data.put("requesterName", tr.getRequesterName());
-                  data.put("hits", tr.getHits());
-                  data.put("reward", tr.getReward());
-                  data.put("projects", tr.getProjects());
-                  data.put("timestamp", formatDate(tr.getTimestamp()));
-
-                  listToSave.add(data);
-              } 
-              bigQueryService.insert(kind, listToSave);
-          }
-
-          OfyService.ofy().clear();
-
-          if(topRequesterResult.getNextPageToken() == null) {
-              break;
-          }
+  private List<Map<String, Object>> mapHitRequesters(List<HITrequester> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(HITrequester hitRequester : list) {
+          result.add(mapHitRequester(hitRequester));
       }
+      return result;
   }
-  
-  public <T> ListByCursorResult<T> listByCursor(Map<String, Object> params, String cursorString, Class<T> clazz) {
+
+  private Map<String, Object> mapHitRequester(HITrequester hitRequester) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("requesterId", hitRequester.getRequesterId());
+      result.put("requesterName", hitRequester.getRequesterName());
+      result.put("lastActivity", formatDate(hitRequester.getLastActivity()));
+      return result;
+  }
+
+  private List<Map<String, Object>> mapMarketStatistics(List<MarketStatistics> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(MarketStatistics marketStatistics : list) {
+          result.add(mapMarketStatistics(marketStatistics));
+      }
+      return result;
+  }
+
+  private Map<String, Object> mapMarketStatistics(MarketStatistics marketStatistics) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("id", marketStatistics.getId());
+      result.put("timestamp", formatDate(marketStatistics.getTimestamp()));
+      result.put("hitGroupsAvailable", marketStatistics.getHitGroupsAvailable());
+      result.put("hitsAvailable", marketStatistics.getHitsAvailable());
+      return result;
+  }
+
+  private List<Map<String, Object>> mapTopRequesters(List<TopRequester> list) {
+      List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
+      for(TopRequester topRequester : list) {
+          result.add(mapTopRequester(topRequester));
+      }
+      return result;
+  }
+
+  private Map<String, Object> mapTopRequester(TopRequester topRequester) {
+      Map<String, Object> result = new LinkedHashMap<String, Object>();
+      result.put("id", topRequester.getId());
+      result.put("requesterId", topRequester.getRequesterId());
+      result.put("requesterName", topRequester.getRequesterName());
+      result.put("hits", topRequester.getHits());
+      result.put("reward", topRequester.getReward());
+      result.put("projects", topRequester.getProjects());
+      result.put("timestamp", formatDate(topRequester.getTimestamp()));
+      return result;
+  }
+
+  private <T> ListByCursorResult<T> listByCursor(Map<String, Object> params, String cursorString, Class<T> clazz) {
       List<T> entities = new ArrayList<T>();
-      Query<T> query = ofy().load().type(clazz).limit(1000);
-      
+      Query<T> query = ofy().load().type(clazz).limit(500);
+
       if (params != null) {
           for (Map.Entry<String, Object> entry : params.entrySet()) {
               query = query.filter(entry.getKey(), entry.getValue());

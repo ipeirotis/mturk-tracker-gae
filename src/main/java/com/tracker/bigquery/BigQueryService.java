@@ -70,44 +70,39 @@ public class BigQueryService {
         }
     }
     
-    public void insert(String tableId, List<Map<String, Object>> data) {
-        try {
-            List<Rows> rowsList = new ArrayList<Rows>();
-            for(Map<String, Object> dataItem : data){
-                TableDataInsertAllRequest.Rows rows = new TableDataInsertAllRequest.Rows();
-                rows.setJson(buildTableRow(dataItem));
-                rowsList.add(rows);
-            }
+    public void insert(String tableId, List<Map<String, Object>> data) throws IOException {
+        List<Rows> rowsList = new ArrayList<Rows>();
+        for(Map<String, Object> dataItem : data){
+            TableDataInsertAllRequest.Rows rows = new TableDataInsertAllRequest.Rows();
+            rows.setJson(buildTableRow(dataItem));
+            rowsList.add(rows);
+        }
 
-            TableDataInsertAllRequest request = new TableDataInsertAllRequest().setRows(rowsList);
-            TableDataInsertAllResponse response = bigquery.tabledata().insertAll(projectId, datasetId, tableId, request).execute();
+        TableDataInsertAllRequest request = new TableDataInsertAllRequest().setRows(rowsList);
+        TableDataInsertAllResponse response = bigquery.tabledata().insertAll(projectId, datasetId, tableId, request).execute();
 
-            if (response != null) {
-                List<TableDataInsertAllResponse.InsertErrors> insertErrors = response.getInsertErrors();
-                if (insertErrors != null && !insertErrors.isEmpty()) {
+        if (response != null) {
+            List<TableDataInsertAllResponse.InsertErrors> insertErrors = response.getInsertErrors();
+            if (insertErrors != null && !insertErrors.isEmpty()) {
 
-                    for (TableDataInsertAllResponse.InsertErrors insertError : insertErrors) {
+                for (TableDataInsertAllResponse.InsertErrors insertError : insertErrors) {
 
-                        List<ErrorProto> errorProtos = insertError.getErrors();
-                        if (errorProtos != null && !errorProtos.isEmpty()) {
+                    List<ErrorProto> errorProtos = insertError.getErrors();
+                    if (errorProtos != null && !errorProtos.isEmpty()) {
 
-                            ErrorProto errorProto = errorProtos.get(0);
+                        ErrorProto errorProto = errorProtos.get(0);
 
-                            String errMsg = String.format("Unable to insert data for tableId: %s", tableId);
-                            if (StringUtils.isNotBlank(errorProto.getReason())) {
-                                errMsg += String.format(". Reason: %s", errorProto.getReason());
-                            }
-                            if (StringUtils.isNotBlank(errorProto.getMessage())) {
-                                errMsg += String.format(". Message: %s", errorProto.getMessage());
-                            }
-                            throw new RuntimeException(errMsg);
+                        String errMsg = String.format("Unable to insert data for tableId: %s", tableId);
+                        if (StringUtils.isNotBlank(errorProto.getReason())) {
+                            errMsg += String.format(". Reason: %s", errorProto.getReason());
                         }
+                        if (StringUtils.isNotBlank(errorProto.getMessage())) {
+                            errMsg += String.format(". Message: %s", errorProto.getMessage());
+                        }
+                        throw new RuntimeException(errMsg);
                     }
                 }
             }
-
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Error inserting data into Bigquery table %s", tableId), e);
         }
     }
 
