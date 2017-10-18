@@ -135,6 +135,8 @@ public class ExportToBigQuery extends HttpServlet {
                       columns.put(field.getName(), "BOOLEAN");
                   } else if("boolean".equals(field.getType().getSimpleName())) {
                       columns.put(field.getName(), "BOOLEAN");
+                  } else if("List".equals(field.getType().getSimpleName())) {
+                      columns.put(field.getName(), "STRING_REPEATED");//TODO: support other types(Integer etc)
                   }
               }
           } catch (Exception e) {
@@ -251,6 +253,7 @@ public class ExportToBigQuery extends HttpServlet {
       result.put("requesterId", hitGroup.getRequesterId());
       result.put("title", hitGroup.getTitle());
       result.put("description", hitGroup.getDescription());
+      result.put("keywords", hitGroup.getKeywords());
       result.put("expirationDate", formatDate(hitGroup.getExpirationDate()));
       result.put("reward", hitGroup.getReward());
       result.put("timeAlloted", hitGroup.getTimeAlloted());

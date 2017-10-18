@@ -125,8 +125,15 @@ public class BigQueryService {
         List<TableFieldSchema> tableFieldSchemas = new ArrayList<>();
         for (Map.Entry<String, String> entry : fields.entrySet()) {
             TableFieldSchema tableFieldSchema = new TableFieldSchema();
+            String typeAndMode = entry.getValue();
+            String[] parts = typeAndMode.split("_");
+            if(parts.length > 1) {
+                tableFieldSchema.setType(parts[0]);
+                tableFieldSchema.setMode(parts[1]);
+            } else {
+                tableFieldSchema.setType(entry.getValue());
+            }
             tableFieldSchema.setName(entry.getKey());
-            tableFieldSchema.setType(entry.getValue());
             tableFieldSchemas.add(tableFieldSchema);
         }
 

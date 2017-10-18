@@ -145,9 +145,9 @@
 	</welcome-file-list>
 	
 	<servlet>
-	    <servlet-name>SystemServiceServlet</servlet-name>
+	    <servlet-name>EndpointsServlet</servlet-name>
 	    <servlet-class>
-	      com.google.api.server.spi.SystemServiceServlet
+	      com.google.api.server.spi.EndpointsServlet
 	    </servlet-class>
 	    <init-param>
 	      <param-name>services</param-name>
@@ -163,8 +163,8 @@
 	</servlet>
 	
 	<servlet-mapping>
-	    <servlet-name>SystemServiceServlet</servlet-name>
-	    <url-pattern>/_ah/spi/*</url-pattern>
+	    <servlet-name>EndpointsServlet</servlet-name>
+	    <url-pattern>/_ah/api/*</url-pattern>
 	</servlet-mapping>
 
 	<security-constraint>
